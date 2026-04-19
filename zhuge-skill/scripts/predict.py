@@ -65,6 +65,7 @@ def predict_match(match_str: str, league: str = "serie-a", save: bool = True,
     fid = api_football.find_fixture(home, away, league=league)
     if not fid:
         print(f"  {DIM}    未找到 fixture，启用 demo 模式 (配 API_FOOTBALL_KEY 才跑真数据){RESET}")
+        print("::TAIJIOS::DEMO::MODE::")  # machine-readable marker for api_server to surface
         return run_demo(match_str=match_str)
     print(f"  {DIM}    fixture id: {fid}{RESET}")
 

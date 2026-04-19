@@ -1,0 +1,102 @@
+# Changelog
+
+All notable changes to the TaijiOS bundle will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [1.1.2] — 2026-04-19
+
+### Security (P0)
+
+- **BUG-1 · Traceback / 本地路径不再外泄**. `POST /v1/predict` 和 `/v1/sync` 的返回体经过 `sanitize_output()` 过滤: 任何 `Traceback (...)` 段被替换为 `[traceback removed · trace_id=<id>]`; Windows `C:\...` / Unix `/home/...` 绝对路径被替换为 `<server-path>`. 完整原文只写到服务端 `~/.taijios/api_errors.jsonl`, 客户端只见脱敏版.
+- **BUG-2 · `user_id` path-traversal 关闭**. `POST /v1/soul/chat` 的 `user_id` 字段与 `GET /v1/soul/{user_id}` URL 段均加 `^[a-zA-Z0-9_-]{1,64}$` 白名单校验. `"../../../etc/passwd"` 等恶意输入在 Pydantic / FastAPI 路由层即 422 reject, 不再进入 `Soul._data_dir` 拼接.
+- **BUG-3 · 可选 Bearer 认证**. 新增环境变量 `TAIJIOS_API_TOKEN`:
+  - 未设 → dev 模式 · 所有 `/v1/*` 端点开放
+  - 已设 → 非 loopback client 必须带 `Authorization: Bearer <token>` · 127.0.0.1 默认豁免
+  - `TAIJIOS_STRICT_AUTH=1` → 连 loopback 都强制要求 token
+  `/health` + `/` 永远公开 (load balancer / 监控友好).
+- **BUG-4 · 并发信号量**. `/v1/predict` 由 `asyncio.Semaphore(3)` 限流 (可通过 `TAIJIOS_PREDICT_CONCURRENCY` 调整); 超过排队至 200s 后 504. `/v1/sync` 由 `asyncio.Semaphore(1)` + 60s 结果缓存 (`TAIJIOS_SYNC_CACHE_TTL`) 节流.
+
+### Security (P0 · added in hotfix)
+
+- **BUG-11 · 弱 token / placeholder 默认值检测**. 新增 `_is_weak_token()` 守门:
+  - 拒绝已知 placeholder 列表 (`your-token`, `your-access-token`, `secret`, `password`, `test`, `dev`, `admin`, `changeme` 等大小写不敏感)
+  - 拒绝长度 < 32 字符 (即 < 16 byte = 128 bit 熵) 的 token
+  - **生产模式 (非 loopback bind) 启动时弱 token = sys.exit(2)** · 不再启动
+  - Loopback bind + 弱 token = stderr 警告但允许启动 (dev 友好)
+  - 文档 `taiji/README.md` + `taiji/taijios-lite/.env.example` 占位符从 `your-token` / `your-access-token` 改为 `<run: python tools/gen_token.py>`,降低复制粘贴风险
+  - 新增 `tools/gen_token.py` · 用 `secrets.token_hex(32)` 生成 256 bit 强 token · 支持 `--env` / `--setx` 输出
+  - 注: 本地 Windows `HKCU\Environment` 若已遗留 `TAIJIOS_API_TOKEN=your-token`, 需手动清:
+    ```powershell
+    setx TAIJIOS_API_TOKEN ""
+    # 或彻底删:
+    reg delete "HKCU\Environment" /v TAIJIOS_API_TOKEN /f
+    ```
+  - **触发**: 2026-04-19 小九审计 v1.1.2 时发现 shell env 里有遗留 `your-token` · 我最初误判为"设计优点", 小九纠正后承认"合理化失败" · 登记到 `manual_v2_live_evidence.jsonl`
+
+### Security (P1)
+
+- **BUG-5 · Demo fallback 显式标识**. `zhuge-skill/scripts/predict.py` 查不到 fixture 时 stdout 多打印 `::TAIJIOS::DEMO::MODE::`, `api_server` 检测到该标记后 response body `data.demo_mode: true`. 客户端可直接判别"真数据 vs 降级演示".
+- **BUG-6 · 空 `user_id` 不再退化 singleton**. `ChatIn.user_id` 加 `min_length=1` + 白名单 · 空字符串 422 reject, 不再污染 `~/.taijios/_soul.json`.
+- **BUG-8 · CORS 白名单**. 新增 `CORSMiddleware`, 默认允许 `http://127.0.0.1:*` / `http://localhost:*` / `https://taijios.xyz`. 其它 Origin (如 `https://evil.example.com`) 不回显 `Access-Control-Allow-Origin`.
+- **BUG-10 · `match` 长度 + 正则白名单**. `PredictIn.match` 加 `min_length=5, max_length=128` + `^[\w\s\u4e00-\u9fa5()·.'-]+\s+(?:vs|v|VS|-)\s+[\w\s\u4e00-\u9fa5()·.'-]+$` 正则 · shell 元字符 `;` / `&` / `|` / `$` / `` ` `` 等在验证层即被 reject.
+
+### Enhancements
+
+- **OPT-7 · 统一 Response Envelope**. 所有 `/v1/*` 成功响应包装为 `{data: {...}, meta: {trace_id, caller, ts, version, route, ...}}`. 错误响应带 `{error: {...}, meta: {...}}`. 上游客户端可通过 `meta.trace_id` 跨服务 correlate.
+- **Server-side error log**. 新增 `~/.taijios/api_errors.jsonl` · append-only · 每行含 `{ts, caller, trace_id, route, exc_kind, raw}`. 诊断用, 永远不经客户端.
+- **Version bump** `1.1.1 → 1.1.2`.
+
+### Testing
+
+新增 `tests/test_security.py` · **24 pytest 用例 · 全部通过 (1.50s)** · 覆盖 BUG-1/2/3/4/5/6/8/10/11 + OPT-7 envelope + gen_token CLI:
+
+```
+test_predict_invalid_match_returns_422_no_traceback PASSED
+test_predict_no_path_leak                           PASSED
+test_soul_chat_rejects_path_traversal_user_id       PASSED
+test_soul_state_url_rejects_path_traversal          PASSED
+test_soul_chat_rejects_dot_user_id                  PASSED
+test_health_public_no_auth_needed                   PASSED
+test_auth_enforced_when_token_set_non_loopback      PASSED
+test_auth_accepts_valid_bearer                      PASSED
+test_auth_rejects_wrong_bearer                      PASSED
+test_soul_chat_rejects_empty_user_id                PASSED
+test_cors_allows_taijios_xyz                        PASSED
+test_cors_rejects_random_origin                     PASSED
+test_predict_rejects_oversized_match                PASSED
+test_predict_rejects_shell_meta_chars_via_pattern   PASSED
+test_predict_accepts_valid_chinese                  PASSED
+test_response_has_meta_envelope                     PASSED
+test_sync_cache_meta                                PASSED
+test_index_renders                                  PASSED
+test_health_version                                 PASSED
+test_weak_token_empty                               PASSED
+test_weak_token_known_placeholder                   PASSED
+test_weak_token_too_short                           PASSED
+test_strong_token_accepted                          PASSED
+test_gen_token_cli                                  PASSED
+```
+
+跑法: `cd g:/tmp/taijios-bundle && python -m pytest tests/ -v`.
+
+### Known deferred (not fixed in 1.1.2)
+
+- **BUG-7 · `/v1/sync` 速率**: 仅加了 60s 内存缓存. 真正的 per-client rate limit 需要引入 slowapi 依赖, 延后.
+- **BUG-9 · Soul prompt sanitization**: defense-in-depth 仍未加 — Soul 内部的 LLM 回复基于规则 + 本地 model 构造, 当前非高风险; 但未来接 tool-calling 前必须加. 已记入 [Manual §5](../C:/Users/A/.claude/projects/g--AIOS-Backups/memory/TAIJIOS_OPERATING_MANUAL.md) 待办.
+
+## [1.1.1] — 2026-04-18
+
+Initial bundle snapshot (pre-audit). Bundle zipped to `TaijiOS_bundle_20260418.zip` (5.74 MB / 462 files). This is the state *before* any enterprise security hardening.
+
+- `/v1/predict` · zhuge-skill 足球推演
+- `/v1/soul/chat` · taijios-soul 对话
+- `/v1/sync` · 公共晶体池拉取
+- `/v1/crystals/local` · 本地晶体库
+- `/v1/heartbeat/last` · 心跳日志
+- `/v1/share/queue` · 共享审核队列
+- `/v1/status` · 系统状态
+- `/health` · 健康检查
+
+没有鉴权 · 没有 CORS · 没有输入校验 · 没有并发控制 · Traceback 直接回给 client. 参见 [bug_audit_report.md](../../../../g:/tmp/bug_audit_report.md) 完整审计.

@@ -276,7 +276,11 @@ FEISHU_APP_SECRET=...
 
 # ── LLM Gateway ──────────────────────────────────
 TAIJIOS_GATEWAY_ENABLED=1
-TAIJIOS_API_TOKEN=your-token
+# ⚠ Generate a strong token first, do NOT use placeholder values:
+#    python tools/gen_token.py
+# Examples like "your-token" / "secret" / "test" will be REJECTED at startup
+# in non-loopback (production) mode (see SECURITY.md).
+TAIJIOS_API_TOKEN=<run: python tools/gen_token.py>
 
 # ── GitHub Learning ───────────────────────────────
 GITHUB_TOKEN=ghp_...
