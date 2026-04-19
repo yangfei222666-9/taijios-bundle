@@ -31,7 +31,9 @@ def cross_validate(home: str, away: str, league: str = "serie-a",
                          timeout=timeout)
         if not r.ok:
             return None
-    except Exception:
+    except Exception as e:
+        import sys as _sys
+        print(f"[the_odds] {type(e).__name__}: {e}", file=_sys.stderr)
         return None
 
     for m in r.json():

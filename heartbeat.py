@@ -92,8 +92,10 @@ def tick_backfill():
         m = re.search(r"回传\s*(\d+).*?命中率.*?(\d+\.?\d*)%?", out, re.S)
         if m:
             log(f"backfill OK · 回传 {m.group(1)} · 命中率 {m.group(2)}%")
+        elif r.returncode == 0:
+            log(f"backfill done · rc=0 · (regex miss · out_tail={out[-120:].replace(chr(10),' ').strip()})")
         else:
-            log(f"backfill done · rc={r.returncode}")
+            log(f"backfill FAIL · rc={r.returncode} · stderr={(r.stderr or '')[-120:].replace(chr(10),' ').strip()}")
     except Exception as e:
         log(f"backfill FAIL · {type(e).__name__}: {e}")
 
@@ -116,8 +118,10 @@ def tick_crystallize():
         m = re.search(r"(\d+)\s*个晶体|新增\s*(\d+)", out)
         if m:
             log(f"crystallize OK · {m.group(0)}")
+        elif r.returncode == 0:
+            log(f"crystallize done · rc=0 · (regex miss · out_tail={out[-120:].replace(chr(10),' ').strip()})")
         else:
-            log(f"crystallize done · rc={r.returncode}")
+            log(f"crystallize FAIL · rc={r.returncode} · stderr={(r.stderr or '')[-120:].replace(chr(10),' ').strip()}")
     except Exception as e:
         log(f"crystallize FAIL · {type(e).__name__}: {e}")
 

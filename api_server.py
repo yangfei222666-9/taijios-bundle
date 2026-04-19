@@ -277,6 +277,14 @@ def health():
 
 # ─────────────── Routes: v1 (auth-gated when TOKEN set) ───────────────
 
+def _count_jsonl_lines_safe(path) -> int:
+    """Race-safe line count · FileNotFoundError / PermissionError → 0 · 用于 /v1/status."""
+    try:
+        return sum(1 for line in path.read_text(encoding="utf-8", errors="replace").splitlines() if line.strip())
+    except (FileNotFoundError, PermissionError):
+        return 0
+
+
 @app.get("/v1/status", summary="系统状态 · 7 repo + 心跳", dependencies=[Depends(require_token)])
 def system_status():
     trace_id = new_trace()
@@ -287,14 +295,8 @@ def system_status():
             "repos": {r: (ROOT / r).exists() for r in repos},
             "env_loaded": (ZHUGE / ".env").exists(),
             "heartbeat_log_exists": (HOME_TAIJIOS / "heartbeat.log").exists(),
-            "experience_count": (
-                sum(1 for _ in (ZHUGE / "data" / "experience.jsonl").read_text(encoding="utf-8").splitlines())
-                if (ZHUGE / "data" / "experience.jsonl").exists() else 0
-            ),
-            "local_crystals_count": (
-                sum(1 for _ in (ZHUGE / "data" / "crystals_local.jsonl").read_text(encoding="utf-8").splitlines())
-                if (ZHUGE / "data" / "crystals_local.jsonl").exists() else 0
-            ),
+            "experience_count": _count_jsonl_lines_safe(ZHUGE / "data" / "experience.jsonl"),
+            "local_crystals_count": _count_jsonl_lines_safe(ZHUGE / "data" / "crystals_local.jsonl"),
         },
         "meta": meta_envelope(trace_id, {"route": "/v1/status"}),
     }

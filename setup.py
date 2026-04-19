@@ -118,7 +118,14 @@ def configure_env(unattended: bool):
     else:
         print(f"  {D}DeepSeek 免费注册 ¥5 额度: https://platform.deepseek.com/{X}")
         print(f"  {D}直接回车 = 跳过 (走 DEMO 模式, 不调 LLM){X}")
-        ds_key = input(f"  输入 DEEPSEEK_API_KEY (sk-xxx): ").strip()
+        try:
+            import getpass
+            ds_key = getpass.getpass(f"  输入 DEEPSEEK_API_KEY (sk-xxx, 不回显): ").strip()
+        except (EOFError, KeyboardInterrupt):
+            ds_key = ""
+        except Exception:
+            print(f"  {Y}⚠ getpass 不可用 · 以下输入将回显{X}")
+            ds_key = input(f"  输入 DEEPSEEK_API_KEY (sk-xxx): ").strip()
 
     if ds_key:
         txt = env_file.read_text(encoding="utf-8")

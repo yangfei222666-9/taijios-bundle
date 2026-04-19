@@ -49,5 +49,7 @@ def get_team_xg(team_name: str, league: str = "serie-a",
             "avg_xga": round(total_xga / n, 2),
             "net_xg": round((total_xg - total_xga) / n, 2),
         }
-    except Exception:
+    except Exception as e:
+        import sys as _sys
+        print(f"[understat] {type(e).__name__}: {e}", file=_sys.stderr)
         return None

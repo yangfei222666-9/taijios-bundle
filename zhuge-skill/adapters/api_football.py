@@ -23,8 +23,9 @@ def _get(path: str, params: Dict, timeout: int = 30) -> Optional[Dict]:
                          params=params, timeout=timeout)
         if r.ok:
             return r.json()
-    except Exception:
-        pass
+    except Exception as e:
+        import sys as _sys
+        print(f"[api_football] {type(e).__name__}: {e}", file=_sys.stderr)
     return None
 
 
