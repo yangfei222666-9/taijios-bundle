@@ -18,6 +18,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `/health` + `/` 永远公开 (load balancer / 监控友好).
 - **BUG-4 · 并发信号量**. `/v1/predict` 由 `asyncio.Semaphore(3)` 限流 (可通过 `TAIJIOS_PREDICT_CONCURRENCY` 调整); 超过排队至 200s 后 504. `/v1/sync` 由 `asyncio.Semaphore(1)` + 60s 结果缓存 (`TAIJIOS_SYNC_CACHE_TTL`) 节流.
 
+### Features (added in adapter hotfix · 2026-04-19 12:00)
+
+- **Whisper STT** · `aios/voice/whisper_stt.py` · 0-dep OpenAI Whisper client
+  - Drift-safe key resolution (skips OPENAI_API_KEY due to OpenClaw proxy shim pollution)
+  - Live-tested: 1s sine wave → 200 OK + Whisper hallucination text
+- **Firecrawl** · `aios/crawl/firecrawl_adapter.py` + README · scrape/crawl/search · free tier 500 credits
+  - Live-tested: docs.openclaw.ai → 8472-char markdown · 1 credit consumed
+- **Langfuse self-host** · `aios/observability/langfuse_client.py` + `deploy/langfuse/docker-compose.yml`
+  - 0-dep ingestion client · fail-soft (observability outage never breaks caller)
+- All three follow same discipline: 0 pip deps · drift-safe .env loader · §5.3 trace_id provenance
+
 ### Security (P0 · added in hotfix)
 
 - **BUG-11 · 弱 token / placeholder 默认值检测**. 新增 `_is_weak_token()` 守门:
