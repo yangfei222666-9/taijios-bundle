@@ -1,5 +1,7 @@
 @echo off
 chcp 65001 >nul
+set PYTHONIOENCODING=utf-8
+set PYTHONUTF8=1
 echo.
 echo ================================
 echo  TaijiOS 一键安装 (双击入口)

@@ -234,7 +234,10 @@ def main():
         demo_soul_round()
         # 装完跑一次 doctor 兜底
         print(f"\n{B}{C}[额外]{X} 跑 doctor 自检确认全绿...")
-        run([sys.executable, str(ROOT / "doctor.py"), "--dry"], check=False)
+        doctor_r = run([sys.executable, str(ROOT / "doctor.py"), "--dry"], check=False)
+        if getattr(doctor_r, "returncode", 0) != 0:
+            print(f"{Y}⚠ doctor 检出问题 (rc={doctor_r.returncode}) · 安装已完成但可能不完整{X}")
+            print(f"  运行 python doctor.py 查看详情并手动修复")
         final_notes()
     except KeyboardInterrupt:
         print(f"\n{Y}中断 · 已装部分可能有效, 再跑一次 setup.py 继续.{X}")

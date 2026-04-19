@@ -521,6 +521,19 @@ def share_queue():
 
 # ─────────────── Startup banner ───────────────
 
+def _port_in_use(host: str, port: int) -> bool:
+    """Probe if (host, port) already bound · race-window microseconds · best-effort."""
+    import socket as _socket
+    with _socket.socket(_socket.AF_INET, _socket.SOCK_STREAM) as s:
+        s.settimeout(0.5)
+        try:
+            return s.connect_ex((host, port)) == 0
+        except Exception as e:
+            # Permission denied / route error etc — do NOT silently exit; warn and assume free
+            print(f"[api_server] port probe error (assume free): {type(e).__name__}: {e}", file=sys.stderr)
+            return False
+
+
 def main():
     ap = argparse.ArgumentParser(description="TaijiOS API Server")
     ap.add_argument("--port", type=int, default=8787)
@@ -532,6 +545,14 @@ def main():
     except ImportError:
         print("✗ uvicorn 未装. 跑: pip install 'uvicorn[standard]'", file=sys.stderr)
         sys.exit(1)
+
+    # Port conflict detect (BUG-#13 · race window acceptable)
+    probe_host = "127.0.0.1" if args.host == "0.0.0.0" else args.host
+    if _port_in_use(probe_host, args.port):
+        print(f"\n✗ 端口 {args.host}:{args.port} 已被占用 · 可能已有 taijios-api 在跑", file=sys.stderr)
+        print(f"  诊断: (Win) netstat -ano | findstr :{args.port}  /  (Unix) lsof -ti:{args.port}", file=sys.stderr)
+        print(f"  清理: 找到 PID 后 taskkill /F /PID <pid>  /  kill <pid>", file=sys.stderr)
+        sys.exit(3)
 
     tok = _api_token()
     auth_info = "auth=ENABLED (Bearer token)" if tok else "auth=DEV (no token)"

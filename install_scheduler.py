@@ -10,7 +10,21 @@ Mac/Linux: 打印 crontab 行, 用户自己 `crontab -e` 粘贴
     python install_scheduler.py --time 22:00   # 每日 22:00
     python install_scheduler.py --uninstall    # 卸载
 """
-import sys, os, platform, subprocess, pathlib, argparse
+import sys, os, platform, subprocess, pathlib, argparse, locale
+
+
+def _sys_enc() -> str:
+    """System default encoding · 白名单校验避免 ANSI_X3.4-1968 等无效值 → 降级 utf-8.
+    中文 Windows=gbk · 英文 Windows=cp1252 · Linux/Mac=utf-8 · 容器裸环境=ascii→utf-8."""
+    try:
+        enc = (locale.getpreferredencoding(False) or "").lower().replace("_", "-")
+    except Exception:
+        enc = ""
+    # whitelist: 只认这些; 其它 (如 ansi-x3.4-1968 / ascii / "") 一律 utf-8
+    safe = {"utf-8", "gbk", "gb2312", "gb18030", "cp1252", "cp936", "cp437", "utf-16", "utf-16-le", "big5"}
+    if enc in safe:
+        return enc
+    return "utf-8"
 
 os.environ.setdefault("PYTHONIOENCODING", "utf-8")
 try:
@@ -36,7 +50,7 @@ def windows_install(run_time: str):
         ["schtasks", "/create", "/tn", TASK,
          "/tr", str(BAT),
          "/sc", "daily", "/st", run_time, "/f"],
-        capture_output=True, encoding="gbk", errors="replace"
+        capture_output=True, encoding=_sys_enc(), errors="replace"
     )
     if r.returncode == 0:
         print(f"✓ 已装 Windows schtasks '{TASK}' · 每日 {run_time}")
@@ -50,7 +64,7 @@ def windows_install(run_time: str):
 
 def windows_uninstall():
     r = subprocess.run(["schtasks", "/delete", "/tn", TASK, "/f"],
-                       capture_output=True, encoding="gbk", errors="replace")
+                       capture_output=True, encoding=_sys_enc(), errors="replace")
     print(r.stdout + r.stderr if r.returncode else f"✓ 已删除 '{TASK}'")
     if BAT.exists():
         BAT.unlink()
