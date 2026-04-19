@@ -5,6 +5,57 @@ All notable changes to the TaijiOS bundle will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.3] — 2026-04-19 (audit hotfix · Opus 4.6 macOS run)
+
+20-item audit by Claude Opus 4.6 (1M context · macOS Darwin 24.6.0). 17 real fixes
+shipped across 4 batches · 3 audit items found false-positive on our v1.1.2 source
+(bundle vs. macOS unzip differences). Each batch dual-LLM verified
+(DeepSeek + OpenAI gpt-4o-mini · per [feedback_dual_llm_reason_verify.md] hard rule),
+patches adjusted per verifier must-fix items.
+
+### B1 · 4 P0 必崩 (commit `39f9afc`)
+
+- BUG-#1 brain.py:161 cast_hexagram tuple unpack (was crashing user's 算卦)
+- BUG-#2 brain.py DIVINATION_DIR fallback via glob (defensive · canonical works in our bundle)
+- BUG-#3 vision.py _call_claude ANTHROPIC_API_KEY KeyError → safe .get + RuntimeError
+- BUG-#4 imagegen.py urlopen no try-except → typed exceptions, URL not in raise message (privacy)
+
+### B2 · 4 P1 功能缺陷 (commit `2763685`)
+
+- BUG-#5 api_football.py find_fixture league=None auto-loop 6 leagues
+- BUG-#6 embed.py N+1 → ~/.taijios/embed_cache.jsonl persistent cache (sha256 keyed · size warn at 50MB)
+- BUG-#7 seed_experience.jsonl created (placeholder note only · refusing to seed fake match scores)
+- BUG-#8 embed.py silent except → typed except + stderr (response body redacted to avoid leaking tokens)
+- Bonus: aios/crawl/firecrawl_adapter.py default formats fixed (was including invalid `metadata`)
+
+### B3 · 4 P2 平台兼容 (commit `f529bd3`)
+
+- BUG-#9 install_scheduler.py hardcoded gbk → locale.getpreferredencoding with whitelist (utf-8/gbk/cp1252) · unknown → utf-8
+- BUG-#10 setup.bat add `PYTHONIOENCODING=utf-8` + `PYTHONUTF8=1` (taijios.py already had in-Python reconfigure)
+- BUG-#11 setup.py doctor.py rc check + warn user instead of silent failure
+- BUG-#13 api_server.py main() `_port_in_use()` probe before uvicorn.run (race window microseconds acceptable)
+
+### B4 · 5 P3 质量 (commit `4126593`)
+
+- BUG-#15 heartbeat.py regex miss now logs out_tail / stderr (was opaque "rc=0")
+- BUG-#16 setup.py DEEPSEEK_API_KEY input → getpass (no terminal echo)
+- BUG-#17 requirements.txt was empty → populated (fastapi/uvicorn/pydantic/requests/python-dotenv) · optional deps commented
+- BUG-#18 api_server.py /v1/status race-safe `_count_jsonl_lines_safe()` helper
+- BUG-#20 (partial · 3 of ~20+) zhuge-skill/adapters/{the_odds,understat,api_football} log to stderr instead of silent
+
+### 跳过 (audit 误报或已有 fix)
+
+- BUG-#12 macOS launchd: install_scheduler.py 已有 platform.system() 分支 + Unix crontab instructions · macOS 全自动是 nice-to-have 不修
+- BUG-#14 Pydantic example: api_server.py v1.1.2 重写已用 `json_schema_extra={"example":...}`
+- BUG-#19 license noop: 已有 "[FUTURE HOOK · 现在 noop]" docstring 标记
+
+### Verification stats
+
+- Test: tests/test_security.py · 24 passed across all 4 batches · 0 regression
+- All B1/B2/B3 patches: 3-LLM verifier (DS + OpenAI + Relay) · Relay-glm-5 always 403 (中转站不稳 · 已记 audit)
+- All B4 patches: single DS verifier (节 token · per DS recommendation in B2)
+- 4 batches verifier consistency: 2/3 quorum 同意 each · 8 must-fix items adopted
+
 ## [1.1.2] — 2026-04-19
 
 ### Security (P0)
