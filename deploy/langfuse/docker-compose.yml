@@ -1,0 +1,59 @@
+# TaijiOS · Langfuse self-host · 本机观测 LLM 调用 (token cost / latency / quality)
+# Reference: https://langfuse.com/self-hosting/docker-compose
+#
+# Quick start:
+#   1. cd deploy/langfuse
+#   2. cp .env.example .env && edit to set NEXTAUTH_SECRET / SALT / ENCRYPTION_KEY
+#   3. docker compose up -d
+#   4. Open http://localhost:3000 · first-user sign-up becomes admin
+#   5. Create project "taijios" · copy PUBLIC_KEY (pk-lf-...) + SECRET_KEY (sk-lf-...)
+#   6. Add to G:/taijios_full_workspace/.env:
+#        LANGFUSE_HOST=http://localhost:3000
+#        LANGFUSE_PUBLIC_KEY=pk-lf-...
+#        LANGFUSE_SECRET_KEY=sk-lf-...
+#
+# Stop:
+#   docker compose down
+#   (keep --volumes to also drop DB)
+version: "3.9"
+
+services:
+  langfuse-db:
+    image: postgres:15-alpine
+    container_name: taijios-langfuse-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-langfuse}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-langfuse_local_dev}
+      POSTGRES_DB: ${POSTGRES_DB:-langfuse}
+    ports:
+      - "127.0.0.1:${POSTGRES_PORT:-5433}:5432"
+    volumes:
+      - langfuse_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-langfuse}"]
+      interval: 5s
+      retries: 10
+
+  langfuse:
+    image: langfuse/langfuse:2
+    container_name: taijios-langfuse
+    restart: unless-stopped
+    depends_on:
+      langfuse-db:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:${LANGFUSE_PORT:-3000}:3000"
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-langfuse}:${POSTGRES_PASSWORD:-langfuse_local_dev}@langfuse-db:5432/${POSTGRES_DB:-langfuse}
+      NEXTAUTH_URL: ${NEXTAUTH_URL:-http://localhost:3000}
+      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:?set NEXTAUTH_SECRET in .env (min 32 chars · gen via `openssl rand -hex 32`)}
+      SALT: ${SALT:?set SALT in .env (min 16 chars)}
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY:?set ENCRYPTION_KEY in .env (64 hex chars)}
+      LANGFUSE_CSP_ENFORCE_HTTPS: "false"
+      TELEMETRY_ENABLED: "false"
+      LANGFUSE_ENABLE_EXPERIMENTAL_FEATURES: "true"
+
+volumes:
+  langfuse_db_data:
+    name: taijios_langfuse_db_data
