@@ -26,7 +26,22 @@ except Exception:
 ROOT = pathlib.Path(__file__).resolve().parent
 ZHUGE = ROOT / "zhuge-skill"
 SOUL_SRC = ROOT / "TaijiOS" / "taijios-soul" / "src"
-DIVINATION_DIR = ROOT / "taiji" / "taijios-lite" / "aios" / "core"
+def _find_divination_dir():
+    """Find dir containing true_divination.py · canonical first, then glob fallback (max depth 4).
+
+    canonical 路径在标准 bundle layout 下命中 · glob fallback 用于异常 unzip / 重组目录场景.
+    返回第一个命中目录, 都没有则返回 canonical (后续 import 失败时给可读错误)."""
+    canonical = ROOT / "taiji" / "taijios-lite" / "aios" / "core"
+    if (canonical / "true_divination.py").exists():
+        return canonical
+    # Fallback · glob ROOT (limited depth 4 via parts check) for true_divination.py
+    for hit in ROOT.glob("**/true_divination.py"):
+        if len(hit.relative_to(ROOT).parts) <= 5:
+            return hit.parent
+    return canonical
+
+
+DIVINATION_DIR = _find_divination_dir()
 ANSI = re.compile(r"\x1b\[[0-9;]*m")
 
 # 占卦触发词 · 通用决策/预判场景 (不限足球)
@@ -158,7 +173,8 @@ def brain_chat(msg: str, soul, verbose: bool = True):
     # 3 · 通用占卦 · 辞职/创业/要不要/纠结 等决策类 → 起一卦
     if divination:
         print(f"\n  {C}检测到问卦意图 · 起一卦...{X}")
-        hex_out = cast_hexagram(msg)
+        raw, interp = cast_hexagram(msg, soul=s)  # tuple unpack · 传 soul 让 LLM 解读
+        hex_out = f"{raw}\n\n{interp}".strip() if interp else raw
 
         print(f"\n  {G}{B}孔明:{X}")
         for line in r.reply.split("\n"):

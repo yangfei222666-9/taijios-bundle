@@ -66,12 +66,35 @@ def generate(prompt: str, out_path: str = None, size: str = "2048x2048") -> str:
         method="POST",
     )
     t0 = time.time()
-    with urllib.request.urlopen(req, timeout=180) as r:
-        resp = json.loads(r.read().decode("utf-8"))
-    url = resp["data"][0]["url"]
+    try:
+        with urllib.request.urlopen(req, timeout=180) as r:
+            resp = json.loads(r.read().decode("utf-8"))
+    except urllib.error.HTTPError as e:
+        body_preview = e.read()[:300].decode("utf-8", "replace")
+        raise RuntimeError(f"Seedream API HTTP {e.code} · 详情: {body_preview}")
+    except (urllib.error.URLError, TimeoutError) as e:
+        raise RuntimeError(f"Seedream API 网络/超时错误: {getattr(e, 'reason', e)}")
+    except json.JSONDecodeError as e:
+        raise RuntimeError(f"Seedream API 返回非 JSON: {e}")
+
+    if not isinstance(resp, dict) or not resp.get("data"):
+        err = resp.get("error", resp) if isinstance(resp, dict) else resp
+        raise RuntimeError(f"Seedream API 返回异常 (无 data): {str(err)[:200]}")
+    item = resp["data"][0] if resp["data"] else {}
+    url = item.get("url")
+    if not url:
+        raise RuntimeError(f"Seedream API 返回缺 url 字段 · 完整 item: {str(item)[:200]}")
+
     out = out_path or str(pathlib.Path.home() / ".taijios" / f"imagegen_{int(time.time())}.png")
     pathlib.Path(out).parent.mkdir(parents=True, exist_ok=True)
-    urllib.request.urlretrieve(url, out)
+    try:
+        urllib.request.urlretrieve(url, out)
+    except Exception as e:
+        # URL 仅写到本地 log 不暴露在 message
+        import sys as _sys
+        print(f"[imagegen] 下载失败 url={url[:80]}...", file=_sys.stderr)
+        raise RuntimeError(f"图片下载失败 ({type(e).__name__}): {str(e)[:150]}")
+
     print(f"  ✓ {time.time()-t0:.1f}s · saved → {out}  ({pathlib.Path(out).stat().st_size//1024} KB)")
     return out
 

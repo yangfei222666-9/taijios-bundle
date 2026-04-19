@@ -57,7 +57,9 @@ def _detect_media_type(data: bytes) -> str:
 
 
 def _call_claude(img_b64: str, media_type: str, question: str) -> str:
-    key = os.environ["ANTHROPIC_API_KEY"]
+    key = os.environ.get("ANTHROPIC_API_KEY", "").strip()
+    if not key:
+        raise RuntimeError("ANTHROPIC_API_KEY 未设置 · 无法用 Claude vision · 在 .env 加: ANTHROPIC_API_KEY=sk-ant-...")
     payload = {
         "model": os.environ.get("CLAUDE_MODEL", "claude-sonnet-4-6"),
         "max_tokens": 1024,
