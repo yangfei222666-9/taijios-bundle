@@ -28,18 +28,19 @@ def _get(path: str, params: Dict, timeout: int = 30) -> Optional[Dict]:
     return None
 
 
-def find_fixture(home: str, away: str, league: str = "serie-a",
+def find_fixture(home: str, away: str, league: str = None,
                  date: str = None, season: int = 2025) -> Optional[int]:
-    """根据队名找 fixture id
+    """根据队名找 fixture id.
 
-    搜索策略：
-    1. 如指定 date，只搜该日
-    2. 否则先搜未来 30 场，再搜全赛季
-    3. 队名做模糊匹配（去除 FC/AS/AC 等前后缀）
+    league=None → 自动遍历主流 6 联赛 (premier/laliga/serie/bundes/ligue/UCL).
+    league=具体名 → 只搜该联赛.
+
+    搜索策略 (per league):
+    1. 如指定 date, 只搜该日
+    2. 否则先搜未来 30 场, 再搜全赛季
+    3. 队名模糊匹配 (去除 FC/AS/AC 等前后缀)
     """
-    league_id = LEAGUE_IDS.get(league.lower())
-    if not league_id:
-        return None
+    leagues_to_try = [league] if league else list(LEAGUE_IDS.keys())  # 上限 6 (LEAGUE_IDS 只 6 个)
 
     def _norm(s: str) -> str:
         s = s.lower().strip()
@@ -65,17 +66,27 @@ def find_fixture(home: str, away: str, league: str = "serie-a",
                 return m["fixture"]["id"]
         return None
 
-    # 1. 指定 date
-    if date:
-        return _search({"league": league_id, "season": season, "date": date})
-
-    # 2. 未来 30 场（绝大多数情况命中）
-    fid = _search({"league": league_id, "next": 30})
-    if fid:
-        return fid
-
-    # 3. 整个赛季（fallback）
-    return _search({"league": league_id, "season": season})
+    for lg in leagues_to_try:
+        if not lg:
+            continue
+        league_id = LEAGUE_IDS.get(lg.lower())
+        if not league_id:
+            continue
+        # 1. 指定 date
+        if date:
+            fid = _search({"league": league_id, "season": season, "date": date})
+            if fid:
+                return fid
+            continue
+        # 2. 未来 30 场
+        fid = _search({"league": league_id, "next": 30})
+        if fid:
+            return fid
+        # 3. 整赛季 fallback
+        fid = _search({"league": league_id, "season": season})
+        if fid:
+            return fid
+    return None
 
 
 def get_odds(fixture_id: int, bookmaker: int = 8) -> Optional[Dict]:

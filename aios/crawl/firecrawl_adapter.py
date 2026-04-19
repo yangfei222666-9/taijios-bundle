@@ -119,10 +119,15 @@ def _post(path: str, body: dict, timeout: int = 120) -> dict:
 
 def scrape(url: str, formats: list[str] = None, only_main: bool = True,
            timeout: int = 120) -> dict:
-    """Scrape a single URL → markdown + metadata. 1 credit."""
+    """Scrape a single URL → markdown (metadata is always returned alongside). 1 credit.
+
+    Valid formats: markdown / html / rawHtml / links / screenshot /
+                   screenshot@fullPage / extract / json / summary /
+                   changeTracking / branding
+    """
     return _post("/v1/scrape", {
         "url": url,
-        "formats": formats or ["markdown", "metadata"],
+        "formats": formats or ["markdown"],
         "onlyMainContent": only_main,
     }, timeout=timeout)
 

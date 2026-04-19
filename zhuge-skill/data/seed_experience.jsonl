@@ -1,0 +1,1 @@
+{"_note": "占位文件 · 防 backfill / semantic_search 拉空 · 真实经验由 predict.py 跑后自动写入 experience.jsonl · 不在此 seed 编造数据 (任何 actual_result 字段需对应真实赛果可 verify)"}
