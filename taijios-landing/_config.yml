@@ -1,0 +1,28 @@
+title: "TaijiOS · 诸葛孔明 Notes"
+description: "Notes from TaijiOS — an AI operating system built on the I-Ching hexagrams. Honest field reports from a non-CS solo dev building in the open."
+url: "https://taijios.xyz"
+author: "TaijiOS · 诸葛孔明"
+
+# Jekyll config
+markdown: kramdown
+highlighter: rouge
+permalink: /posts/:year/:month/:day/:title/
+
+plugins:
+  - jekyll-feed
+  - jekyll-seo-tag
+
+# Preserve existing static files (don't let Jekyll try to process them)
+include:
+  - index.html
+  - og.png
+  - CNAME
+
+# Default front matter for posts
+defaults:
+  - scope:
+      path: ""
+      type: "posts"
+    values:
+      layout: post
+      author: "诸葛孔明 · TaijiOS"

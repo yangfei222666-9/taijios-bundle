@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="{{ page.lang | default: 'en' }}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ page.title }} · TaijiOS Notes</title>
+  <meta name="description" content="{{ page.excerpt | strip_html | truncate: 160 }}">
+  {% feed_meta %}
+  {% seo %}
+  <style>
+    body { max-width: 720px; margin: 2em auto; padding: 0 1em; font-family: ui-serif, Georgia, serif; line-height: 1.7; color: #222; background: #fdfdf8; }
+    h1 { font-size: 1.9em; margin-bottom: 0.2em; }
+    h2 { border-bottom: 1px solid #ddd; padding-bottom: 0.3em; margin-top: 1.8em; }
+    .meta { color: #666; font-size: 0.9em; margin-bottom: 2em; }
+    code { background: #f0f0ea; padding: 0.1em 0.4em; border-radius: 3px; font-size: 0.9em; }
+    pre { background: #f0f0ea; padding: 1em; overflow-x: auto; border-radius: 4px; }
+    blockquote { border-left: 4px solid #8b7355; padding-left: 1em; color: #555; font-style: italic; }
+    a { color: #8b4513; }
+    .tags { margin-top: 3em; color: #888; font-size: 0.85em; }
+    .footer { margin-top: 4em; padding-top: 1em; border-top: 1px solid #ddd; color: #999; font-size: 0.85em; }
+  </style>
+</head>
+<body>
+  <nav><a href="/">← TaijiOS</a> · <a href="/blog.html">All Notes</a> · <a href="/feed.xml">RSS</a></nav>
+  <article>
+    <h1>{{ page.title }}</h1>
+    <div class="meta">
+      {{ page.date | date: "%Y-%m-%d" }}
+      {% if page.author %}· {{ page.author }}{% endif %}
+    </div>
+    {{ content }}
+    {% if page.tags %}
+    <div class="tags">tags: {% for tag in page.tags %}<code>{{ tag }}</code> {% endfor %}</div>
+    {% endif %}
+  </article>
+  <div class="footer">
+    TaijiOS is an AI operating system built on 易经 hexagrams · solo dev 小九 · ask: what's your structure?
+  </div>
+</body>
+</html>

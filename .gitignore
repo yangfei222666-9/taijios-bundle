@@ -1,0 +1,9 @@
+__pycache__/
+*.pyc
+*.pyo
+.DS_Store
+.env
+*.log
+data/*.jsonl
+zhuge-skill/data/experience.jsonl
+zhuge-skill/data/crystals_local.jsonl

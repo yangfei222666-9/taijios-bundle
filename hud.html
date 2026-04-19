@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>TaijiOS HUD</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#050a08;--panel:#0a120a;--border:#1a3a2a;--bh:#2a5a3a;
+  --green:#4a9;--gd:#1a3a2a;--gb:#6fc;
+  --amber:#fa4;--ad:#3a2a0a;
+  --cyan:#4df;--cd:#0a2a3a;
+  --red:#f44;--rd:#3a0a0a;
+  --purple:#a6f;--pd:#1a0a2a;
+  --pink:#f7a;--pkd:#3a0a2a;
+  --text:#6a9;--td:#3a6a4a;--lb:#5a8a6a;--dim:#1a3a2a
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100%;min-height:100vh;background:var(--bg);font-family:'Share Tech Mono',monospace;color:var(--text);font-size:14px}
+.scan{position:fixed;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.06) 2px,rgba(0,0,0,.06) 4px);z-index:999}
+.vig{position:fixed;inset:0;pointer-events:none;background:radial-gradient(ellipse at center,transparent 60%,rgba(0,0,0,.5));z-index:998}
+@keyframes pulse{0%,100%{opacity:.3}50%{opacity:1}}
+@keyframes glow{0%,100%{text-shadow:0 0 4px currentColor}50%{text-shadow:0 0 14px currentColor}}
+@keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+@keyframes slideIn{from{opacity:0;transform:translateY(-3px)}to{opacity:1;transform:translateY(0)}}
+@keyframes alertPulse{0%,100%{border-color:var(--red);box-shadow:inset 0 0 12px rgba(255,68,68,.05),0 0 8px rgba(255,68,68,.15)}50%{border-color:var(--red);box-shadow:inset 0 0 30px rgba(255,68,68,.15),0 0 20px rgba(255,68,68,.35)}}
+#hud{max-width:1500px;width:95vw;margin:0 auto;padding:16px;display:flex;flex-direction:column;gap:10px}
+
+/* Header */
+.hdr{display:flex;align-items:center;justify-content:space-between;padding:12px 18px;border:1px solid var(--border);background:var(--panel);position:relative;overflow:hidden}
+.hdr::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--bh),transparent)}
+.logo{font-family:'Press Start 2P',monospace;font-size:18px;color:var(--amber);letter-spacing:3px;text-shadow:0 0 12px var(--amber)}
+.logo b{color:var(--green);font-weight:normal}
+.d{width:8px;height:8px;border-radius:50%;background:var(--dim);box-shadow:none;transition:all .5s}
+.d.on{background:var(--green);box-shadow:0 0 6px var(--green)}
+.d.w{background:var(--amber);box-shadow:0 0 6px var(--amber);animation:pulse 1.5s infinite}
+.d.r{background:var(--red);box-shadow:0 0 6px var(--red);animation:pulse .8s infinite}
+.d.x{background:var(--rd);box-shadow:none}
+.dots{display:flex;gap:6px;align-items:center}
+/* Heartbeat */
+.hb{display:inline-flex;align-items:flex-end;gap:1px;height:14px;margin-left:8px}
+.hb-bar{width:2px;height:2px;background:var(--dim);transition:height .15s,background .15s}
+
+/* Dream bar */
+.db{display:flex;align-items:center;gap:12px;padding:10px 18px;border:1px solid var(--pd);background:linear-gradient(90deg,var(--panel),var(--pd))}
+.dp{padding:4px 10px;border:1px solid var(--pd);font-size:12px;color:var(--pd);transition:all .5s}
+.dp.a{border-color:var(--purple);color:var(--purple);background:var(--pd);text-shadow:0 0 6px var(--purple)}
+.dtl{flex:1;height:6px;background:var(--pd);overflow:hidden}
+.df{height:100%;background:var(--purple);transition:width .8s;position:relative}
+.df::after{content:'';position:absolute;right:0;top:-2px;width:2px;height:9px;background:var(--purple);box-shadow:0 0 8px var(--purple);animation:blink 1s infinite}
+.dn{font-family:'Press Start 2P',monospace;font-size:12px;color:var(--purple);animation:glow 3s infinite;min-width:48px;text-align:right}
+
+/* Panels */
+.en{border:1px solid var(--border);background:var(--panel);padding:14px;overflow:hidden;position:relative;transition:border-color .5s}
+.en::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--bh),transparent)}
+.en.alert{animation:alertPulse 1.2s infinite;border-width:2px;background:linear-gradient(var(--panel),var(--rd))!important}
+.eh{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid var(--border)}
+.nm{font-family:'Press Start 2P',monospace;font-size:11px;letter-spacing:1px}
+.lb{color:var(--lb);font-size:11px;margin-top:7px}
+.vl{font-size:14px;min-height:18px}
+.cb{height:5px;background:var(--gd);margin:5px 0;overflow:hidden}
+.cf{height:100%;transition:width .8s}
+
+/* Engine colors — DIM by default, bright on .lit */
+.cc .nm{color:var(--cd)}.cc.lit .nm{color:var(--cyan)}.cc .vl{color:var(--cyan)}.cc .cf{background:var(--cyan)}
+.ca .nm{color:var(--ad)}.ca.lit .nm{color:var(--amber)}.ca .vl{color:var(--amber)}.ca .cf{background:var(--amber)}
+.cg .nm{color:var(--gd)}.cg.lit .nm{color:var(--gb)}.cg .vl{color:var(--gb)}.cg .cf{background:var(--gb)}
+.cp .nm{color:var(--pkd)}.cp.lit .nm{color:var(--pink)}.cp .vl{color:var(--pink)}.cp .cf{background:var(--pink)}
+.cv .nm{color:var(--pd)}.cv.lit .nm{color:var(--purple)}.cv .vl{color:var(--purple)}.cv .cf{background:var(--purple)}
+.cr .nm{color:var(--rd)}.cr.lit .nm{color:var(--red)}.cr .vl{color:var(--red)}.cr .cf{background:var(--red)}
+/* Border hierarchy: dim default, bright only on alert/lit */
+.en.lit{border-color:var(--bh)}
+.en.alert{border-color:var(--red)!important}
+.cc.lit{border-color:var(--cd)}.ca.lit{border-color:var(--ad)}.cg.lit{border-color:var(--gd)}.cp.lit{border-color:var(--pkd)}.cv.lit{border-color:var(--pd)}.cr.lit{border-color:var(--rd)}
+.cc.alert{border-color:var(--cyan)!important}.ca.alert{border-color:var(--amber)!important}.cr.alert{border-color:var(--red)!important}
+/* Alert/lit title glow */
+.en.alert .nm,.en.lit .nm{filter:brightness(2)}
+.en.alert .nm{text-shadow:0 0 8px currentColor}
+
+/* Edge flash — left border pulse on data change */
+@keyframes edgeFlash{0%{opacity:1}60%{opacity:.4}100%{opacity:0}}
+.en::after{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--border);z-index:1;opacity:0}
+.en.pulse::after{animation:edgeFlash .6s ease-out forwards}
+.cc.pulse::after{background:var(--cyan);box-shadow:0 0 8px var(--cyan)}
+.ca.pulse::after{background:var(--amber);box-shadow:0 0 8px var(--amber)}
+.cg.pulse::after{background:var(--gb);box-shadow:0 0 8px var(--gb)}
+.cp.pulse::after{background:var(--pink);box-shadow:0 0 8px var(--pink)}
+.cv.pulse::after{background:var(--purple);box-shadow:0 0 8px var(--purple)}
+.cr.pulse::after{background:var(--red);box-shadow:0 0 8px var(--red)}
+
+/* Mini sparkline in panel headers */
+.mspark{display:inline-flex;align-items:flex-end;gap:1px;height:12px;margin-left:auto;margin-right:8px;flex-shrink:0}
+.mspark-b{width:2px;min-height:1px;background:var(--dim);transition:height .3s,background .3s}
+/* Dream rhythm mini line */
+.drhy{display:inline-flex;align-items:flex-end;gap:1px;height:10px;margin-left:8px}
+.drhy-b{width:2px;min-height:1px;background:var(--dim);transition:height .3s,background .3s}
+/* Bus pulse line */
+.bpulse{display:flex;align-items:flex-end;gap:1px;height:14px;margin-top:4px}
+.bpulse-b{flex:1;min-height:1px;background:var(--dim);transition:height .3s,background .3s}
+
+/* Row 1: 情势(大) | 震卦+Persona(小，上下叠) */
+.row1{display:grid;grid-template-columns:3fr 2fr;gap:8px}
+.row1-right{display:flex;flex-direction:column;gap:8px}
+/* Row 2: 颐卦 + 师卦 (等分，小格) */
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+/* Row 3: 系统层全宽 */
+.row3{display:grid;grid-template-columns:1fr;gap:8px}
+/* Row 4: 流面板 */
+.row4{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+@media(max-width:700px){.row1,.row2,.row4{grid-template-columns:1fr}.row1-right{flex-direction:row}}
+
+/* Bars */
+.dim-row{display:flex;align-items:center;gap:6px;margin:4px 0}
+.dim-label{width:32px;font-size:11px;color:var(--lb);text-align:right;flex-shrink:0}
+.dim-val{width:32px;font-size:11px;color:var(--lb);text-align:right;flex-shrink:0}
+.bar-track{display:flex;gap:1px;align-items:center;flex:1}
+.bar-seg{width:5px;height:10px;transition:background .5s}
+
+/* Squad */
+.squad-grid{display:flex;flex-wrap:wrap;gap:3px;margin:5px 0}
+.squad-dot{width:10px;height:10px;transition:background .4s}
+
+/* Yao */
+.yao-block{display:inline-block;width:16px;height:16px;border:1px solid #222;margin-right:3px;text-align:center;line-height:16px;font-size:9px;transition:all .4s}
+
+/* Breaker */
+.breaker{display:inline-block;width:10px;height:10px;border-radius:50%;transition:all .5s;margin:0 4px}
+
+/* Sparkline — full width version */
+.spark-wide{display:flex;align-items:flex-end;gap:1px;height:36px;padding:4px 0}
+.spark-bar{width:100%;min-width:2px;flex:1;background:var(--dim);transition:height .4s,background .4s;min-height:1px}
+
+/* Stream panels */
+.pn{border:1px solid var(--border);background:var(--panel);padding:14px;height:200px;overflow:hidden;position:relative}
+.pn::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--bh),transparent)}
+.pn::after{content:'';position:absolute;bottom:0;left:0;right:0;height:24px;background:linear-gradient(transparent,var(--panel));pointer-events:none}
+.pt{font-family:'Press Start 2P',monospace;font-size:10px;color:var(--td);margin-bottom:10px;letter-spacing:1px}
+.st{height:155px;font-size:12px;line-height:1.6;overflow:hidden}
+/* Message row */
+.mr{display:flex;gap:8px;padding:2px 0;animation:slideIn .3s}
+.mrf,.mrt{min-width:32px;font-size:12px}.mra{color:var(--td)}.mrc{color:var(--td);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* Memory density */
+.md{display:flex;gap:1px;margin-top:5px}
+.mb{width:6px;height:16px;transition:background .8s}
+
+/* Tags */
+.tg{display:inline-block;padding:3px 8px;border:1px solid var(--border);font-size:10px;margin:2px 2px;color:var(--td);transition:all .3s}
+.tg.on{border-color:var(--gb);color:var(--gb);text-shadow:0 0 4px var(--gb)}
+
+/* Status bar */
+.sb{display:flex;gap:16px;padding:10px 18px;border:1px solid var(--border);background:var(--panel);font-size:11px;flex-wrap:wrap;align-items:center}
+.sl{color:var(--td)}
+
+/* Taiji */
+.tj{display:inline-block;width:48px;height:48px;border-radius:50%;background:conic-gradient(var(--green) 0deg,var(--green) 180deg,var(--bg) 180deg,var(--bg) 360deg);position:relative;animation:spin 20s linear infinite;box-shadow:0 0 15px var(--gd)}
+.tj::before,.tj::after{content:'';position:absolute;width:24px;height:24px;border-radius:50%}
+.tj::before{top:0;left:50%;transform:translateX(-50%);background:var(--green)}
+.tj::after{bottom:0;left:50%;transform:translateX(-50%);background:var(--bg)}
+
+::-webkit-scrollbar{width:3px}::-webkit-scrollbar-track{background:#060a06}::-webkit-scrollbar-thumb{background:var(--bh)}
+</style>
+</head>
+<body>
+<div class="scan"></div><div class="vig"></div>
+<div id="hud">
+
+<!-- Header -->
+<div class="hdr">
+  <div class="logo">TAIJI<b>OS</b> <span style="font-size:9px;color:var(--td)">v0.5 HUD</span> <span id="connBadge" style="font-size:8px;padding:2px 6px;border:1px solid var(--dim);color:var(--dim);margin-left:8px;font-family:'Press Start 2P',monospace">SIM</span></div>
+  <div class="tj"></div>
+  <div style="text-align:right">
+    <div id="ck" style="color:var(--td);font-size:12px;margin-bottom:4px"></div>
+    <div class="dots">
+      <span style="font-size:8px;color:var(--td)">PULSE</span>
+      <div class="hb" id="hbeat"></div>
+      <span style="font-size:7px;color:var(--dim)">60s</span>
+      <span style="font-size:8px;color:var(--td);margin-left:6px">ENG</span>
+      <span class="d" id="d0" title="情势"></span>
+      <span class="d" id="d1" title="震卦"></span>
+      <span class="d" id="d2" title="师卦"></span>
+      <span class="d" id="d3" title="Persona"></span>
+      <span class="d" id="d4" title="颐卦"></span>
+    </div>
+  </div>
+</div>
+
+<!-- Dream -->
+<div class="db">
+  <span style="color:var(--purple);font-size:11px;font-family:'Press Start 2P',monospace">DREAM</span>
+  <div style="display:flex;gap:4px">
+    <span class="dp" id="p0">觉醒</span><span class="dp" id="p1">浅梦</span><span class="dp" id="p2">深梦</span><span class="dp" id="p3">REM</span>
+  </div>
+  <div class="dtl"><div class="df" id="dF"></div></div>
+  <span class="dn" id="dN">觉醒</span>
+  <div class="drhy" id="drRhy"></div>
+</div>
+
+<!-- Row 1: 情势(大) | 震卦+Persona(小) -->
+<div class="row1">
+  <!-- 情势 -->
+  <div class="en cc" id="en0">
+    <div class="eh"><span class="nm">☯ 情势引擎</span><div class="mspark" id="ms0"></div><span style="font-size:10px"><span class="d" id="e0d"></span> <span id="e0s" style="color:var(--td)">ACTIVE</span></span></div>
+    <div class="lb">当前情势</div>
+    <div class="vl" id="e0v">初始化...</div>
+    <div id="e0dims" style="margin-top:4px"></div>
+    <div style="margin-top:6px;display:flex;gap:16px;font-size:11px">
+      <span><span style="color:var(--td)">张力:</span> <span id="e0t" style="color:var(--td)">0</span></span>
+      <span><span style="color:var(--td)">干预:</span> <span id="e0i" style="color:var(--td)">—</span></span>
+    </div>
+  </div>
+  <!-- 右侧叠放 -->
+  <div class="row1-right">
+    <!-- 震卦 -->
+    <div class="en ca" id="en1">
+      <div class="eh"><span class="nm">⚡ 震卦引擎</span><div class="mspark" id="ms1"></div><span style="font-size:10px"><span class="d" id="e1d"></span> <span id="e1s" style="color:var(--td)">WATCH</span></span></div>
+      <div id="e1yao" style="margin:4px 0"></div>
+      <div id="e1legend" style="font-size:8px;color:var(--dim);margin:2px 0;line-height:1.4"></div>
+      <div style="margin:4px 0;font-size:11px"><span style="color:var(--td)">熔断器</span> <span id="e1brk"></span></div>
+      <div id="e1log"></div>
+    </div>
+    <!-- Persona -->
+    <div class="en cp" id="en3">
+      <div class="eh"><span class="nm">🎭 人格引擎</span><div class="mspark" id="ms3"></div><span style="font-size:10px"><span class="d" id="e3d"></span> <span style="color:var(--td)">SYNC</span></span></div>
+      <div class="vl" id="e3v" style="font-size:14px;margin:2px 0"></div>
+      <div id="e3tags" style="margin:4px 0;display:flex;flex-wrap:wrap;gap:2px"></div>
+      <div id="e3bar"></div>
+      <div id="e3h" style="font-size:10px;color:var(--td);margin-top:4px"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Row 2: 颐卦 + 师卦 -->
+<div class="row2">
+  <!-- 颐卦 -->
+  <div class="en cv" id="en4">
+    <div class="eh"><span class="nm">🧠 颐卦引擎</span><div class="mspark" id="ms4"></div><span style="font-size:10px"><span class="d" id="e4d"></span> <span style="color:var(--td)">STORE</span></span></div>
+    <div class="lb">记忆密度 (24h)</div>
+    <div class="md" id="mD"></div>
+    <div style="margin-top:6px;font-size:11px">
+      <span style="color:var(--td)">经验:</span><span id="e4exp" style="color:var(--td)">0</span>
+      <span style="color:var(--td);margin-left:8px">高权重:</span><span id="e4hw" style="color:var(--td)">0</span>
+      <span style="color:var(--td);margin-left:8px">命中:</span><span id="e4hr" style="color:var(--td)">0%</span>
+    </div>
+    <div class="lb">最近存取</div>
+    <div id="e4r" style="font-size:10px"></div>
+  </div>
+  <!-- 师卦 -->
+  <div class="en cg" id="en2">
+    <div class="eh"><span class="nm">🗡 师卦引擎</span><div class="mspark" id="ms2"></div><span style="font-size:10px"><span class="d" id="e2d"></span> <span id="e2s" style="color:var(--td)">READY</span></span></div>
+    <div class="vl" id="e2v" style="font-size:12px"></div>
+    <div style="display:flex;gap:12px;align-items:flex-start;margin-top:4px">
+      <div><div class="lb" style="margin-top:0">小队</div><div class="squad-grid" id="e2sq"></div></div>
+      <div style="flex:1"><div class="lb" style="margin-top:0">阵型</div><div id="e2fm" style="margin-top:2px"></div></div>
+    </div>
+    <div id="e2bar"></div>
+    <div class="lb">任务历史</div>
+    <div id="e2hist" style="font-size:10px;color:var(--td)"></div>
+  </div>
+</div>
+
+<!-- Row 3: 系统层 全宽 -->
+<div class="row3">
+  <div class="en cr" id="en5">
+    <div class="eh"><span class="nm">🔒 系统层</span><span style="font-size:10px"><span class="d" id="e5d"></span> <span id="e5s" style="color:var(--td)">NOMINAL</span></span></div>
+    <div style="display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start">
+      <div style="flex:0 0 auto">
+        <div style="font-size:12px;margin-bottom:6px">
+          网关: <span id="e5gate" style="padding:2px 8px;border:1px solid var(--dim);color:var(--td);font-family:'Press Start 2P',monospace;font-size:9px">PASS</span>
+          <span style="color:var(--td);margin-left:10px">拒绝:</span><span id="e5rej" style="color:var(--td)">0</span>
+        </div>
+        <div style="font-size:11px;margin-bottom:4px">
+          内存: <span class="d" id="e5mem" style="display:inline-block"></span>
+          <span id="e5memtxt" style="color:var(--td)">在线</span>
+        </div>
+      </div>
+      <div style="flex:1;min-width:200px" id="e5bars"></div>
+    </div>
+    <div style="margin-top:6px;font-size:10px;color:var(--td)">负载趋势 (60s)</div>
+    <div class="spark-wide" id="e5spark"></div>
+    <div id="e5spksum" style="display:flex;gap:16px;font-size:10px;margin-top:2px"></div>
+  </div>
+</div>
+
+<!-- Row 4: Streams -->
+<div class="row4">
+  <div class="pn"><div class="pt">📡 记忆流</div><div class="st" id="mS"></div></div>
+  <div class="pn"><div class="pt">🔄 引擎消息</div><div class="st" id="mF"></div><div class="bpulse" id="busPulse"></div></div>
+</div>
+
+<!-- Status bar -->
+<div class="sb">
+  <div><span class="sl">GATE.IN</span> <span class="d" id="gI" style="display:inline-block"></span></div>
+  <div><span class="sl">GATE.OUT</span> <span class="d" id="gO" style="display:inline-block"></span></div>
+  <div><span class="sl">SAFETY</span> <span class="d" id="gS" style="display:inline-block"></span></div>
+  <div><span class="sl">DREAM</span> <span class="d" id="gD" style="display:inline-block"></span></div>
+  <div><span class="sl">UPTIME</span> <span id="ut" style="color:var(--text)">00:00:00</span></div>
+  <div><span class="sl">MSG</span> <span id="mc" style="color:var(--text)">0</span></div>
+  <div><span class="sl">EVT/m</span> <span id="epm" style="color:var(--text)">0</span></div>
+  <div style="margin-left:auto"><span style="color:var(--td);font-size:9px">太极OS · 五引擎实时监控</span></div>
+</div>
+
+</div>
+<script>
+// ═══════════════════════════════════════════════════════
+// TaijiOS HUD v0.5
+// ═══════════════════════════════════════════════════════
+function pk(a){return a[~~(Math.random()*a.length)]}
+function rn(a,b){return a+Math.random()*(b-a)}
+function pd(n){return n<10?"0"+n:""+n}
+function $(i){return document.getElementById(i)}
+function clamp(v,mn,mx){return v<mn?mn:v>mx?mx:v}
+function drift(v,range,mn,mx){return clamp(v+(Math.random()-.5)*2*range,mn,mx)}
+
+function segBar(val,max,segs,colorFn){
+  var h='<div class="bar-track">';var filled=Math.round(val/max*segs);
+  for(var i=0;i<segs;i++){var c=i<filled?(colorFn?colorFn(i/segs):"var(--green)"):"var(--dim)";h+='<div class="bar-seg" style="background:'+c+'"></div>'}
+  return h+'</div>';
+}
+function barGreen(){return "var(--green)"}
+function barCyan(){return "var(--cyan)"}
+function barPurple(){return "var(--purple)"}
+function barGYR(r){return r<.5?"var(--green)":r<.75?"var(--amber)":"var(--red)"}
+
+// ── 数据池 ──
+var SITUATIONS=["平稳运行","资源充裕","时机紧迫","主动权偏移","关系波动","能量不足","高速扩张","深层整合","协同共创","戒备观察"];
+var INTERVENTIONS=["调整资源分配","切换主动策略","强化关系维度","能量再平衡","时机窗口锁定","位置重新校准","降级非关键路径","启动深层整合"];
+var FAULT_TYPES=["连接超时","数据校验失败","内存溢出","权限拒绝","解析异常","模型过载","心跳丢失","上下文溢出"];
+var MISSION_NAMES=["数据清洗","模式匹配","深度分析","报告生成","异常排查","知识整合","性能调优","协同推理","记忆归档","策略仿真"];
+var MISSION_RESULTS=["SUCCESS ✓","SUCCESS ✓","SUCCESS ✓","PARTIAL △","FAILED ✗"];
+var PERSONAS=[
+  {name:"核心·理性分析",avatar:"🤖",tags:["逻辑","分析","严谨","推理"]},
+  {name:"辅助·共情陪伴",avatar:"💗",tags:["共情","温暖","倾听","安抚"]},
+  {name:"专家·领域深入",avatar:"🔬",tags:["专业","深度","精确","引用"]},
+  {name:"创造·发散思维",avatar:"🎨",tags:["创意","联想","自由","隐喻"]},
+  {name:"守护·安全审查",avatar:"🛡️",tags:["安全","审查","谨慎","合规"]},
+  {name:"执行·快速响应",avatar:"⚡",tags:["速度","效率","直接","执行"]}
+];
+var MEM_OPS=["[存入] 偏好: CRT像素美学","[读取] 上下文: 五引擎架构","[整理] 摘要: 宠物→HUD","[衰减] 旧记忆→压缩","[存入] 决策: 最小版+HUD","[读取] 技术栈: HTML/JS","[关联] 跨会话: OS哲学","[存入] 情感: 热情↑","[索引] 经验→向量化","[归档] 低权重批量压缩","[召回] 相似经验×3","[强化] 高命中→权重+1"];
+var ENGINE_MSG=["状态同步","数据请求","策略调整","记忆查询","验证请求","路由决策","心跳","经验共享","张力通报","任务分发","恢复通知","人格建议","负载均衡","降级通知"];
+var FORMATIONS=["侦查","防御","协作","进攻","深潜"];
+var DN=["觉醒","浅梦","深梦","REM"];
+var EC={q:"cyan",z:"amber",s:"gb",p:"pink",y:"purple",x:"red"},EN={q:"情势",z:"震卦",s:"师卦",p:"人格",y:"颐卦",x:"系统"};
+var EK=["q","z","s","p","y"];
+var DIM_LABELS=["时机","资源","主动","位置","关系","能量"];
+var YAO_LABELS=["初","二","三","四","五","上"];
+var YAO_MEANINGS=["感知","评估","响应","修复","验证","恢复"];
+
+// ── 状态 ──
+var dr={s:0,p:0};
+var qingshi={situation:pk(SITUATIONS),dims:[50,60,45,55,50,40],tensions:0,lastIntervention:"—"};
+var zhengua={yao:-1,recovering:false,breakers:["closed","closed","closed"],faults:0,log:[]};
+var shigua={missions:0,activeMission:"—",squad:[],successRate:75,lastResult:"—",totalDone:0,totalSuccess:0,formation:pk(FORMATIONS),history:[]};
+var persona={active:PERSONAS[0].name,avatar:PERSONAS[0].avatar,loaded:6,matchScore:82,history:[]};
+var yigua={experiences:23,highWeight:5,hitRate:68,digests:3};
+var sys={gate:"PASS",authRejects:0,memOnline:true,memHitRate:72,cpu:35,mem:48};
+var memStream=[],engBus=[];
+var ut=0,mc=0,evtMinute=0,evtMinuteCount=0;
+var cpuHistory=[];var hbIdx=0;
+// Activity tracking (30 samples per engine)
+var actE={q:[],z:[],s:[],p:[],y:[]};
+var actDr=[],actBus=[];
+for(var k in actE)for(var i=0;i<30;i++)actE[k].push(0);
+for(var i=0;i<30;i++){actDr.push(0);actBus.push(0)}
+var MSPARK_COLORS={q:"var(--cyan)",z:"var(--amber)",s:"var(--gb)",p:"var(--pink)",y:"var(--purple)"};
+
+for(var i=0;i<12;i++)shigua.squad.push("idle");
+for(var i=0;i<5;i++)memStream.push({t:pk(MEM_OPS),ts:Date.now()-i*5e3});
+for(var i=0;i<60;i++)cpuHistory.push(30+Math.random()*20);
+
+// init memory density
+var mDE=$("mD");for(var i=0;i<48;i++){var b=document.createElement("div");b.className="mb";b.style.background="var(--border)";mDE.appendChild(b)}
+// init squad
+var sqEl=$("e2sq");for(var i=0;i<12;i++){var d=document.createElement("div");d.className="squad-dot";d.style.background="var(--dim)";d.id="sq"+i;sqEl.appendChild(d)}
+// init sparkline (60 bars for 60s)
+var spEl=$("e5spark");for(var i=0;i<60;i++){var b=document.createElement("div");b.className="spark-bar";b.id="sp"+i;b.style.height="1px";spEl.appendChild(b)}
+// init heartbeat
+var hbEl=$("hbeat");for(var i=0;i<20;i++){var b=document.createElement("div");b.className="hb-bar";b.id="hb"+i;hbEl.appendChild(b)}
+// init formation tags
+var fmHtml="";FORMATIONS.forEach(function(f){fmHtml+='<span class="tg" id="f_'+f+'">'+f+'</span>'});$("e2fm").innerHTML=fmHtml;
+// init mini sparklines (30 bars each)
+["ms0","ms1","ms2","ms3","ms4"].forEach(function(id){
+  var el=$(id);if(!el)return;
+  for(var i=0;i<30;i++){var b=document.createElement("div");b.className="mspark-b";el.appendChild(b)}
+});
+// init dream rhythm (30 bars)
+var drEl=$("drRhy");if(drEl)for(var i=0;i<30;i++){var b=document.createElement("div");b.className="drhy-b";drEl.appendChild(b)}
+// init bus pulse (40 bars)
+var bpEl=$("busPulse");if(bpEl)for(var i=0;i<40;i++){var b=document.createElement("div");b.className="bpulse-b";bpEl.appendChild(b)}
+
+function addEvent(engine,text){
+  evtMinuteCount++;mc++;
+}
+
+// Edge flash — pulse left border on data change
+function pulsePanel(id){
+  var el=$(id);if(!el)return;
+  el.classList.remove('pulse');
+  void el.offsetWidth;
+  el.classList.add('pulse');
+  setTimeout(function(){el.classList.remove('pulse')},700);
+}
+
+// Render mini sparkline
+function renderMSpark(id,arr,color){
+  var el=$(id);if(!el||!el.children.length)return;
+  for(var i=0;i<30&&i<el.children.length;i++){
+    var v=i<arr.length?arr[i]:0;
+    el.children[i].style.height=Math.max(1,v*11)+'px';
+    el.children[i].style.background=v>0?color:'var(--dim)';
+  }
+}
+
+// ═══ REAL DATA CONNECTION ═══
+var API_URLS=["http://127.0.0.1:8888/api/hud","http://127.0.0.1:8888/api/metrics","http://127.0.0.1:9090/stats"];
+var connMode="SIM",apiUrl=null,realData=null,fetchBusy=false,prevHex="";
+
+function tryConnect(){
+  API_URLS.forEach(function(url){
+    if(connMode==="LIVE")return;
+    fetch(url,{signal:AbortSignal.timeout(2000)}).then(function(r){
+      if(r.ok)return r.json();throw 0;
+    }).then(function(d){
+      if(connMode!=="LIVE"){realData=d;connMode="LIVE";apiUrl=url;updateBadge()}
+    }).catch(function(){});
+  });
+}
+function pollData(){
+  if(fetchBusy||!apiUrl)return;fetchBusy=true;
+  fetch(apiUrl,{signal:AbortSignal.timeout(3000)}).then(function(r){
+    if(r.ok)return r.json();throw 0;
+  }).then(function(d){realData=d;fetchBusy=false;
+  }).catch(function(){connMode="SIM";apiUrl=null;fetchBusy=false;updateBadge()});
+}
+function updateBadge(){
+  var b=$("connBadge");if(!b)return;
+  if(connMode==="LIVE"){b.textContent="LIVE";b.style.color="var(--green)";b.style.borderColor="var(--green)";b.style.textShadow="0 0 6px var(--green)"}
+  else{b.textContent="SIM";b.style.color="var(--dim)";b.style.borderColor="var(--dim)";b.style.textShadow="none"}
+}
+
+function mapReal(d){
+  if(!d)return;
+  var res=d.resources||{};var ag=d.agents||[];var hex=d.hexagram||{};
+  var sr=d.success_rate||85;var evo=d.evolution_score||0.5;
+  var errs=d.top_errors||[];var slows=d.slow_ops||[];
+  var alive=0;ag.forEach(function(a){if(a.alive)alive++});
+  var tot=Math.max(ag.length,1);
+  var ls=hex.line_scores||{};
+
+  // 系统层
+  sys.cpu=Math.round(res.cpu||0);sys.mem=Math.round(res.mem||0);
+  sys.memHitRate=Math.round(sr);
+  sys.gate=(alive===tot&&errs.length<5)?"PASS":"FAIL";
+  sys.authRejects=errs.reduce(function(s,e){return s+(e.count||1)},0);
+  sys.memOnline=alive>0;
+  cpuHistory.push(sys.cpu);if(cpuHistory.length>60)cpuHistory.shift();
+
+  // 情势 — 六维度从卦象六爻取
+  qingshi.dims=[
+    Math.round((ls.line_4_routing||sr/100)*100),
+    Math.round((1-(res.cpu||50)/100)*100),
+    Math.round((ls.line_2_execution||sr/100)*100),
+    Math.round((ls.line_3_learning||evo)*100),
+    Math.round((ls.line_5_collaboration||alive/tot)*100),
+    Math.round((ls.line_6_governance||0.8)*100)
+  ];
+  for(var i=0;i<6;i++)qingshi.dims[i]=clamp(qingshi.dims[i],5,95);
+  qingshi.situation=hex.global_hexagram_name?(hex.global_hexagram_name+"卦 · "+(hex.global_risk_level||"")):(d.event||"实时监控");
+  qingshi.tensions=errs.length+(hex.changing_lines?hex.changing_lines.length:0);
+  if(slows.length>0)qingshi.lastIntervention=slows[0].operation||slows[0].op||"—";
+  if(hex.dominant_factors&&hex.dominant_factors.length>0&&hex.dominant_factors[0])qingshi.situation=hex.dominant_factors[0];
+
+  // 震卦 — 从errors+guardrails映射
+  var te=errs.reduce(function(s,e){return s+(e.count||1)},0);
+  zhengua.faults=te;
+  if(hex.guardrail_triggered&&!zhengua.recovering){zhengua.recovering=true;zhengua.yao=0}
+  else if(te>5&&!zhengua.recovering){zhengua.recovering=true;zhengua.yao=0}
+  else if(te===0&&!hex.guardrail_triggered&&zhengua.recovering){zhengua.recovering=false;zhengua.yao=-1}
+  if(zhengua.recovering)zhengua.yao=clamp(Math.min(5,Math.floor(te/3)),0,5);
+  zhengua.log=errs.slice(0,4).map(function(e){return "⚠ "+(e.error||e.name||"错误")+" ×"+(e.count||1)});
+  for(var i=0;i<3;i++){
+    if(i<slows.length){var dur=slows[i].duration||slows[i].time||0;zhengua.breakers[i]=dur>2000?"open":dur>500?"half":"closed"}
+    else zhengua.breakers[i]="closed";
+  }
+
+  // 师卦 — agents映射
+  for(var i=0;i<12;i++){
+    if(i<ag.length){var a=ag[i];shigua.squad[i]=!a.alive?"conflict":a.status==="active"||a.status==="running"?"working":"idle"}
+    else shigua.squad[i]="idle";
+  }
+  var running=ag.filter(function(a){return a.alive&&(a.status==="active"||a.status==="running")});
+  shigua.activeMission=running.length>0?running[0].name:"待命";
+  shigua.missions=ag.length;
+  shigua.successRate=Math.round(sr);
+  shigua.formation=running.length>3?"协作":running.length>1?"侦查":"防御";
+
+  // Persona — 最活跃agent
+  if(ag.length>0){
+    var best=ag[0];ag.forEach(function(a){if((a.tasks||0)>(best.tasks||0))best=a});
+    persona.active="核心·"+(best.name||"系统");
+    persona.avatar=best.alive?"🤖":"💀";
+    persona.matchScore=Math.round(best.success_rate||evo*100);
+    persona.loaded=ag.length;
+  }
+
+  // 颐卦
+  yigua.experiences=d.today_improvements||d.improvements_today||yigua.experiences;
+  yigua.hitRate=Math.round(sr);
+  if(hex.confidence)yigua.hitRate=Math.round(hex.confidence*100);
+
+  // Dream — evolution score映射
+  if(evo!==undefined){
+    var ev=typeof evo==="number"&&evo<=1?evo*100:evo;
+    dr.s=ev>90?3:ev>70?2:ev>50?1:0;
+    dr.p=(ev%25)*4;
+  }
+
+  // 记忆流 — 真实数据
+  var ms=d.memory_stream||[];
+  if(ms.length>0){
+    memStream=[];
+    ms.forEach(function(m){
+      memStream.push({t:m.desc||"[操作]",ts:m.ts?new Date(m.ts).getTime():Date.now()});
+    });
+  }
+
+  // 引擎消息 — 真实数据
+  var ee=d.engine_events||[];
+  if(ee.length>0){
+    engBus=[];
+    var nameMap={"情势":"q","震卦":"z","师卦":"s","人格":"p","颐卦":"y","系统":"x"};
+    ee.forEach(function(e){
+      var fk=nameMap[e.from]||"x";
+      var tk=nameMap[e.to]||"p";
+      engBus.push({f:fk,t:tk,c:e.msg||e.severity||""});
+    });
+  }
+
+  // 卦象变化检测
+  var curHex=hex.global_hexagram_bits||"";
+  if(curHex&&curHex!==prevHex){prevHex=curHex;addEvent("卦象","变卦")}
+}
+
+// 启动时尝试连接，离线每15秒重试
+tryConnect();setInterval(function(){if(connMode==="SIM")tryConnect()},15000);
+
+// ═══ TICK ═══
+function tick(){
+  ut++;var n=new Date();
+  $("ck").textContent=pd(n.getHours())+":"+pd(n.getMinutes())+":"+pd(n.getSeconds());
+  $("ut").textContent=pd(~~(ut/3600))+":"+pd(~~((ut%3600)/60))+":"+pd(ut%60);
+  $("mc").textContent=mc;
+  if(ut%60===0){evtMinute=evtMinuteCount;evtMinuteCount=0}
+  $("epm").textContent=evtMinute||evtMinuteCount;
+  // Real data fetch
+  if(connMode==="LIVE")pollData();
+  if(connMode==="LIVE"&&realData)mapReal(realData);
+  var SIM=connMode!=="LIVE";
+
+  // ── Dream ──
+  if(SIM){var drOld=dr.s;dr.p+=rn(.5,2);if(dr.p>=100){dr.p=0;dr.s=(dr.s+1)%4;addEvent("系统","梦境切换")}}
+  $("dF").style.width=dr.p+"%";$("dN").textContent=DN[dr.s];
+  for(var i=0;i<4;i++)$("p"+i).className="dp"+(dr.s===i?" a":"");
+  $("gD").className="d"+(dr.s>=2?" w":"on");
+  actDr.push((dr.s+1)/4);if(actDr.length>30)actDr.shift();
+
+  // ── 情势 ──
+  var qLit=false;
+  if(SIM){
+    for(var i=0;i<6;i++)qingshi.dims[i]=Math.round(drift(qingshi.dims[i],4,5,95));
+    if(Math.random()<.1){qingshi.tensions++;qLit=true;addEvent("情势","张力")}
+    if(Math.random()<.08){qingshi.situation=pk(SITUATIONS);addEvent("情势","态势")}
+    if(Math.random()<.05){qingshi.lastIntervention=pk(INTERVENTIONS);qLit=true;addEvent("情势","干预")}
+  }else{qLit=qingshi.tensions>0}
+  $("e0v").textContent=qingshi.situation;
+  $("e0t").textContent=qingshi.tensions;
+  $("e0t").style.color=qingshi.tensions>5?"var(--amber)":"var(--td)";
+  $("e0i").textContent=qingshi.lastIntervention;
+  $("e0i").style.color=qingshi.lastIntervention!=="—"?"var(--cyan)":"var(--td)";
+  var dh="";for(var i=0;i<6;i++){
+    dh+='<div class="dim-row"><span class="dim-label">'+DIM_LABELS[i]+'</span>'+segBar(qingshi.dims[i],100,22,barGYR)+'<span class="dim-val">'+qingshi.dims[i]+'</span></div>';
+  }
+  $("e0dims").innerHTML=dh;
+  $("e0d").className="d"+(qingshi.tensions>5?" w":"on");
+  $("en0").className="en cc"+(qLit?" lit":"");
+  $("d0").className="d"+(qingshi.tensions>5?" w":"on");
+  actE.q.push(qLit?1:.1);if(actE.q.length>30)actE.q.shift();
+  if(qLit)pulsePanel("en0");
+
+  // ── 震卦 ──
+  var zLit=false;
+  if(SIM){
+    if(zhengua.recovering){
+      zhengua.yao++;zLit=true;
+      if(zhengua.yao>=6){zhengua.recovering=false;zhengua.yao=-1;addEvent("震卦","恢复完成")}
+      else addEvent("震卦","恢复中");
+    }else if(Math.random()<.04){
+      zhengua.faults++;zhengua.recovering=true;zhengua.yao=0;zLit=true;
+      var ft=pk(FAULT_TYPES);
+      zhengua.log.unshift(pd(~~(ut/60))+":"+pd(ut%60)+" ⚠ "+ft);
+      if(zhengua.log.length>4)zhengua.log.pop();
+      addEvent("震卦","故障");
+    }
+    if(Math.random()<.03){
+      var bi=~~(Math.random()*3),states=["closed","half","open"],old2=zhengua.breakers[bi];
+      zhengua.breakers[bi]=pk(states);
+      if(zhengua.breakers[bi]!==old2){zLit=true;addEvent("震卦","熔断器")}
+    }
+  }else{zLit=zhengua.recovering||zhengua.faults>0}
+  // yao render
+  var yh="";for(var j=0;j<6;j++){
+    var act=zhengua.recovering&&j<=zhengua.yao,cur=zhengua.recovering&&j===zhengua.yao;
+    yh+='<span class="yao-block" style="background:'+(act?"var(--amber)":"var(--dim)")+';color:'+(act?"#000":"var(--td)")+';border-color:'+(cur?"var(--amber)":"#222")+'">'+YAO_LABELS[j]+'</span>';
+  }
+  yh+=' <span style="font-size:10px;color:'+(zhengua.recovering?"var(--amber)":"var(--td)")+'">'+(zhengua.recovering?"恢复中...":"正常")+'</span>';
+  $("e1yao").innerHTML=yh;
+  // yao legend
+  var lg="";if(zhengua.recovering){lg='<span style="color:var(--amber)">▸ '+YAO_LABELS[zhengua.yao]+'爻 = '+YAO_MEANINGS[zhengua.yao]+'</span> '}
+  else{for(var j=0;j<6;j++)lg+=YAO_LABELS[j]+'='+YAO_MEANINGS[j]+(j<5?' · ':'');}
+  $("e1legend").innerHTML=lg;
+  // breakers
+  var bh="",bColors={closed:"var(--dim)",half:"var(--amber)",open:"var(--red)"};
+  var bLabels={closed:"●",half:"◐",open:"○"};
+  for(var k=0;k<3;k++){
+    var bc=zhengua.breakers[k];
+    bh+='<span class="breaker" style="background:'+(bc==="closed"?"var(--dim)":bColors[bc])+';box-shadow:'+(bc!=="closed"?"0 0 6px "+bColors[bc]:"none")+'"></span>';
+  }
+  bh+='<span style="font-size:10px;color:var(--td);margin-left:6px">故障: <span style="color:'+(zhengua.faults>0?"var(--amber)":"var(--td)")+'">'+zhengua.faults+'</span></span>';
+  $("e1brk").innerHTML=bh;
+  // log — 只在有故障时显示
+  if(zhengua.log.length>0){
+    $("e1log").innerHTML=zhengua.log.slice(0,3).map(function(l){return '<div style="font-size:10px;color:var(--amber);margin-top:2px">'+l+'</div>'}).join("");
+  }else{
+    $("e1log").innerHTML="";
+  }
+  $("e1d").className="d"+(zhengua.recovering?" w":zhengua.breakers.indexOf("open")>=0?" r":"on");
+  $("e1s").textContent=zhengua.recovering?"ALERT":"WATCH";
+  $("e1s").style.color=zhengua.recovering?"var(--amber)":"var(--td)";
+  $("en1").className="en ca"+(zhengua.recovering?" alert lit":zLit?" lit":"");
+  $("d1").className="d"+(zhengua.recovering?" w":"on");
+  actE.z.push(zhengua.recovering?1:zLit?.6:0);if(actE.z.length>30)actE.z.shift();
+  if(zLit)pulsePanel("en1");
+
+  // ── 师卦 ──
+  var sLit=false;
+  if(SIM){
+    for(var m=0;m<12;m++){
+      if(Math.random()<.1){var r=Math.random();shigua.squad[m]=r<.6?"idle":r<.9?"working":"conflict"}
+    }
+    if(Math.random()<.06&&shigua.activeMission==="—"){
+      shigua.missions++;shigua.activeMission=pk(MISSION_NAMES);shigua.formation=pk(FORMATIONS);
+      for(var m=0;m<12;m++)if(Math.random()<.5)shigua.squad[m]="working";
+      sLit=true;addEvent("师卦","新任务");
+    }
+    if(shigua.activeMission!=="—"&&Math.random()<.08){
+      var result=pk(MISSION_RESULTS);
+      shigua.totalDone++;if(result.indexOf("SUCCESS")>=0)shigua.totalSuccess++;
+      shigua.successRate=shigua.totalDone>0?Math.round(shigua.totalSuccess/shigua.totalDone*100):75;
+      var lr=shigua.activeMission+" "+result;
+      shigua.history.unshift(lr);if(shigua.history.length>4)shigua.history.pop();
+      shigua.lastResult=lr;shigua.activeMission="—";
+      for(var m=0;m<12;m++)shigua.squad[m]="idle";
+      sLit=true;addEvent("师卦","完成");
+    }
+  }else{sLit=shigua.activeMission!=="待命"&&shigua.activeMission!=="—"}
+  // squad dots render (both modes)
+  var sc={idle:"var(--dim)",working:"var(--cyan)",conflict:"var(--red)"};
+  for(var m=0;m<12;m++)$("sq"+m).style.background=sc[shigua.squad[m]]||"var(--dim)";
+  $("e2v").textContent=shigua.activeMission!=="—"&&shigua.activeMission!=="待命"?shigua.activeMission+" ["+shigua.formation+"]":"待命";
+  $("e2v").style.color=shigua.activeMission!=="—"?"var(--gb)":"var(--td)";
+  FORMATIONS.forEach(function(f){var el=$("f_"+f);if(el)el.className="tg"+(shigua.formation===f?" on":"")});
+  $("e2bar").innerHTML='<div class="dim-row"><span class="dim-label">胜率</span>'+segBar(shigua.successRate,100,22,barGreen)+'<span class="dim-val">'+shigua.successRate+'%</span></div>';
+  var hst="";if(shigua.history.length>0)shigua.history.slice(0,3).forEach(function(h){hst+='<div>'+h+'</div>'});
+  else hst='<div style="color:var(--td)">—</div>';
+  $("e2hist").innerHTML=hst;
+  $("e2d").className="d"+(shigua.activeMission!=="—"?" w":"on");
+  $("e2s").textContent=shigua.activeMission!=="—"?"EXEC":"READY";
+  $("e2s").style.color=shigua.activeMission!=="—"?"var(--gb)":"var(--td)";
+  $("en2").className="en cg"+(sLit?" lit":"");
+  $("d2").className="d"+(shigua.activeMission!=="—"?" w":"on");
+  actE.s.push(sLit?1:shigua.activeMission!=="—"?.3:0);if(actE.s.length>30)actE.s.shift();
+  if(sLit)pulsePanel("en2");
+
+  // ── Persona ──
+  var pLit=false;
+  if(SIM){
+    persona.matchScore=Math.round(drift(persona.matchScore,3,40,99));
+    if(Math.random()<.04){
+      var np=pk(PERSONAS);
+      if(np.name!==persona.active){
+        persona.history.unshift({from:persona.active.split("·")[0],to:np.name.split("·")[0],ts:ut});
+        if(persona.history.length>4)persona.history.pop();
+        persona.active=np.name;persona.avatar=np.avatar;pLit=true;
+        addEvent("Persona","切换");
+      }
+    }
+  }
+  $("e3v").innerHTML='<span style="font-size:18px">'+persona.avatar+'</span> '+persona.active+' <span style="color:var(--td);font-size:10px">('+persona.loaded+')</span>';
+  // persona trait tags
+  var curP=PERSONAS.filter(function(p){return p.name===persona.active})[0];
+  var tgh="";if(curP&&curP.tags)curP.tags.forEach(function(t){tgh+='<span class="tg on" style="border-color:var(--pink);color:var(--pink);font-size:9px;padding:2px 6px">'+t+'</span>'});
+  $("e3tags").innerHTML=tgh;
+  $("e3bar").innerHTML='<div class="dim-row"><span class="dim-label">匹配</span>'+segBar(persona.matchScore,100,18,barPurple)+'<span class="dim-val">'+persona.matchScore+'%</span></div>';
+  var hh="";
+  if(persona.history.length>0)persona.history.slice(0,3).forEach(function(s){hh+='<div style="color:var(--pink)">'+pd(~~((ut-s.ts)/60))+'m '+s.from+' → '+s.to+'</div>'});
+  $("e3h").innerHTML=hh;
+  $("en3").className="en cp"+(pLit?" lit":"");
+  $("d3").className="d on";
+  actE.p.push(pLit?1:0);if(actE.p.length>30)actE.p.shift();
+  if(pLit)pulsePanel("en3");
+
+  // ── 颐卦 ──
+  var yLit=false;
+  if(SIM){
+    if(Math.random()<.08){yigua.experiences++;if(Math.random()<.2)yigua.highWeight++;yLit=true}
+    yigua.hitRate=Math.round(drift(yigua.hitRate,2,30,95));
+    if(Math.random()<.04){yigua.digests++;addEvent("颐卦","digest")}
+  }else{yLit=yigua.hitRate>70}
+  $("e4exp").textContent=yigua.experiences;
+  $("e4exp").style.color=yLit?"var(--purple)":"var(--td)";
+  $("e4hw").textContent=yigua.highWeight;
+  $("e4hw").style.color=yigua.highWeight>5?"var(--amber)":"var(--td)";
+  $("e4hr").textContent=yigua.hitRate+"%";
+  $("e4hr").style.color=yigua.hitRate>70?"var(--purple)":"var(--td)";
+  // density blocks
+  if(SIM){var bl=mDE.children;for(var i=0;i<bl.length;i++){
+    if(Math.random()<.06){var v=Math.random();bl[i].style.background=v<.3?"var(--border)":v>.7?"var(--purple)":v>.4?"var(--pd)":"var(--bh)"}
+  }}
+  // memory stream
+  if(SIM&&Math.random()<.15){
+    memStream.unshift({t:pk(MEM_OPS),ts:Date.now()});if(memStream.length>20)memStream.pop();addEvent("颐卦","记忆操作");
+  }
+  var rr="";memStream.slice(0,3).forEach(function(m){
+    var c=m.t[1]==="存"?"var(--purple)":m.t[1]==="读"?"var(--cyan)":m.t[1]==="关"?"var(--pink)":"var(--td)";
+    rr+='<div style="color:'+c+'">'+m.t+'</div>';
+  });
+  $("e4r").innerHTML=rr;
+  $("en4").className="en cv"+(yLit?" lit":"");
+  $("d4").className="d on";
+  actE.y.push(yLit?1:.15);if(actE.y.length>30)actE.y.shift();
+  if(yLit)pulsePanel("en4");
+
+  // ── 系统 ──
+  if(SIM){
+    sys.cpu=Math.round(drift(sys.cpu,5,8,92));
+    sys.mem=Math.round(drift(sys.mem,3,20,88));
+    sys.memHitRate=Math.round(drift(sys.memHitRate,2,40,95));
+    cpuHistory.push(sys.cpu);if(cpuHistory.length>60)cpuHistory.shift();
+    if(Math.random()<.02){sys.gate=sys.gate==="PASS"?"FAIL":"PASS";addEvent("网关","翻转")}
+    if(Math.random()<.03){sys.authRejects++;addEvent("网关","拒绝")}
+    if(Math.random()<.01){sys.memOnline=!sys.memOnline;addEvent("内存","切换")}
+  }
+  var gateOk=sys.gate==="PASS";
+  $("e5gate").textContent=sys.gate;
+  $("e5gate").style.color=gateOk?"var(--green)":"var(--red)";
+  $("e5gate").style.borderColor=gateOk?"var(--green)":"var(--red)";
+  $("e5rej").textContent=sys.authRejects;
+  $("e5rej").style.color=sys.authRejects>0?"var(--amber)":"var(--td)";
+  $("e5mem").className="d"+(sys.memOnline?" on":" r");
+  $("e5memtxt").textContent=sys.memOnline?"在线":"离线";
+  $("e5memtxt").style.color=sys.memOnline?"var(--green)":"var(--red)";
+  $("e5bars").innerHTML=
+    '<div class="dim-row"><span class="dim-label">命中</span>'+segBar(sys.memHitRate,100,22,barGreen)+'<span class="dim-val">'+sys.memHitRate+'%</span></div>'+
+    '<div class="dim-row"><span class="dim-label">CPU</span>'+segBar(sys.cpu,100,22,barGYR)+'<span class="dim-val">'+sys.cpu+'%</span></div>'+
+    '<div class="dim-row"><span class="dim-label">MEM</span>'+segBar(sys.mem,100,22,barGYR)+'<span class="dim-val">'+sys.mem+'%</span></div>';
+  // sparkline
+  for(var i=0;i<cpuHistory.length;i++){
+    var el=$("sp"+i);
+    if(el){el.style.height=Math.max(1,cpuHistory[i]/100*36)+"px";el.style.background=cpuHistory[i]>75?"var(--red)":cpuHistory[i]>50?"var(--amber)":"var(--green)"}
+  }
+  var hasOpen=zhengua.breakers.indexOf("open")>=0;
+  var hasFail=!gateOk;
+  $("e5d").className="d"+(hasFail?" r":hasOpen?" w":"on");
+  $("e5s").textContent=hasFail?"ALERT":hasOpen?"DEGRADED":"NOMINAL";
+  $("e5s").style.color=hasFail?"var(--red)":hasOpen?"var(--amber)":"var(--td)";
+  $("en5").className="en cr"+(hasFail?" alert lit":hasOpen?" lit":"");
+  if(hasFail)pulsePanel("en5");
+  // sparkline summary
+  var spMax=0,spSum=0;for(var i=0;i<cpuHistory.length;i++){if(cpuHistory[i]>spMax)spMax=cpuHistory[i];spSum+=cpuHistory[i]}
+  var spAvg=cpuHistory.length?Math.round(spSum/cpuHistory.length):0;
+  $("e5spksum").innerHTML='<span><span style="color:var(--amber)">PEAK</span> <span style="color:'+(spMax>75?'var(--red)':'var(--amber)')+'">'+Math.round(spMax)+'%</span></span>'
+    +'<span><span style="color:var(--green)">AVG</span> <span style="color:var(--green)">'+spAvg+'%</span></span>'
+    +'<span><span style="color:var(--cyan)">NOW</span> <span style="color:'+(sys.cpu>75?'var(--red)':sys.cpu>50?'var(--amber)':'var(--cyan)')+'">'+sys.cpu+'%</span></span>';
+
+  // ── Heartbeat ──
+  var hbP=[2,2,9,4,2,2,2,11,5,2,2,2,2,7,2,2,2,9,3,2];
+  for(var i=0;i<20;i++){
+    var el=$("hb"+i);if(!el)continue;
+    var v=hbP[(i+hbIdx)%20];
+    el.style.height=v+"px";
+    el.style.background=v>6?"var(--green)":"var(--dim)";
+  }
+  hbIdx=(hbIdx+1)%20;
+
+  // ── Gate blinkers ──
+  $("gI").className="d"+(Math.random()>.1?" on":" x");
+  $("gO").className="d"+(Math.random()>.1?" on":" x");
+  $("gS").className="d"+(Math.random()>.02?" on":" w");
+
+  // ── Engine bus ──
+  var busSent=false;
+  if(SIM&&Math.random()<.3){
+    var f=pk(EK),t=pk(EK.filter(function(e){return e!==f}));
+    engBus.unshift({f:f,t:t,c:pk(ENGINE_MSG)});if(engBus.length>15)engBus.pop();
+    busSent=true;
+  }
+  actBus.push(busSent?1:0);if(actBus.length>40)actBus.shift();
+
+  // ── Render streams ──
+  var sh="";memStream.slice(0,9).forEach(function(m){
+    var age=~~((Date.now()-m.ts)/1e3);
+    var c=m.t[1]==="存"?"var(--purple)":m.t[1]==="读"?"var(--cyan)":m.t[1]==="关"?"var(--pink)":"var(--td)";
+    sh+='<div style="color:'+c+'"><span style="color:var(--td);display:inline-block;min-width:36px;text-align:right">'+age+'s</span> '+m.t+'</div>';
+  });
+  $("mS").innerHTML=sh;
+
+  var mh="";engBus.slice(0,9).forEach(function(m){
+    mh+='<div class="mr"><span class="mrf" style="color:var(--'+EC[m.f]+')">'+EN[m.f]+'</span><span class="mra">→</span><span class="mrt" style="color:var(--'+EC[m.t]+')">'+EN[m.t]+'</span><span class="mrc">'+m.c+'</span></div>';
+  });
+  $("mF").innerHTML=mh;
+
+  // ── Mini sparklines ──
+  renderMSpark("ms0",actE.q,MSPARK_COLORS.q);
+  renderMSpark("ms1",actE.z,MSPARK_COLORS.z);
+  renderMSpark("ms2",actE.s,MSPARK_COLORS.s);
+  renderMSpark("ms3",actE.p,MSPARK_COLORS.p);
+  renderMSpark("ms4",actE.y,MSPARK_COLORS.y);
+
+  // ── Dream rhythm ──
+  var drR=$("drRhy");if(drR&&drR.children.length){
+    for(var i=0;i<30&&i<drR.children.length;i++){
+      var dv=i<actDr.length?actDr[i]:0;
+      drR.children[i].style.height=Math.max(1,dv*9)+'px';
+      drR.children[i].style.background=dv>.5?'var(--purple)':'var(--pd)';
+    }
+  }
+
+  // ── Bus pulse ──
+  var bpE=$("busPulse");if(bpE&&bpE.children.length){
+    for(var i=0;i<40&&i<bpE.children.length;i++){
+      var bv=i<actBus.length?actBus[i]:0;
+      bpE.children[i].style.height=bv>0?'12px':'2px';
+      bpE.children[i].style.background=bv>0?'var(--cyan)':'var(--dim)';
+    }
+  }
+}
+
+// ═══ 启动 ═══
+tick();setInterval(tick,1500);
+</script>
+</body>
+</html>

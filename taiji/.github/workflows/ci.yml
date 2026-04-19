@@ -1,0 +1,74 @@
+name: CI
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+    branches: [master, main]
+
+jobs:
+  secret-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Secret scan
+        run: |
+          FOUND=0
+          for pattern in 'AKIA[0-9A-Z]{16}' 'ghp_[A-Za-z0-9]{36}' 'xox[baprs]-'; do
+            if grep -rP "$pattern" --include='*.py' --include='*.json' --include='*.yaml' --include='*.yml' . 2>/dev/null | grep -v '.git/'; then
+              echo "WARNING: Found potential secret matching $pattern"
+              FOUND=1
+            fi
+          done
+          if [ $FOUND -eq 1 ]; then
+            echo "::warning::Potential secrets detected — review above"
+          fi
+          echo "PASS: Secret scan complete"
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Compile check
+        run: python -m compileall aios/ -q 2>&1 | head -30 || true
+      - name: Install flake8
+        run: pip install flake8
+      - name: Flake8 fatal errors
+        run: flake8 aios/ --select=E999 --max-line-length=120 --count 2>&1 | tail -10 || true
+
+  import-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install dependencies
+        run: pip install -e . 2>&1 | tail -5
+      - name: Check core imports
+        run: |
+          python -c "from aios.core.event_bus import EventBus; print('OK: event_bus')"
+          python -c "from aios.core.circuit_breaker import CircuitBreaker; print('OK: circuit_breaker')"
+          python -c "from aios.gateway.errors import GatewayError; print('OK: gateway.errors')"
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install dependencies
+        run: |
+          pip install pytest pytest-asyncio
+          pip install -e .
+      - name: Run tests
+        run: |
+          if [ -d tests ]; then
+            python -m pytest tests/ -q --tb=short
+          else
+            echo "No tests/ directory — skipping"
+          fi

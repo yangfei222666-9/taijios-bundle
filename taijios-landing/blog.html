@@ -1,0 +1,37 @@
+---
+permalink: /blog.html
+---
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>TaijiOS · Notes</title>
+  <meta name="description" content="Field reports from TaijiOS — honest lessons from building an I-Ching-driven AI OS in the open.">
+  <link rel="alternate" type="application/rss+xml" title="TaijiOS Notes" href="/feed.xml">
+  <style>
+    body { max-width: 720px; margin: 2em auto; padding: 0 1em; font-family: ui-serif, Georgia, serif; line-height: 1.7; color: #222; background: #fdfdf8; }
+    h1 { font-size: 2em; }
+    .post-list { list-style: none; padding: 0; }
+    .post-list li { margin-bottom: 1.5em; padding-bottom: 1em; border-bottom: 1px dashed #ddd; }
+    .post-list a { color: #8b4513; text-decoration: none; font-size: 1.15em; font-weight: 600; }
+    .post-list .date { color: #888; font-size: 0.85em; display: block; }
+    .post-list .excerpt { color: #555; margin-top: 0.4em; }
+    nav a { color: #8b7355; }
+  </style>
+</head>
+<body>
+  <nav><a href="/">← TaijiOS</a> · <a href="/feed.xml">RSS</a></nav>
+  <h1>Notes · 诸葛孔明 笔记</h1>
+  <p>Field reports from TaijiOS. Solo dev 小九 ships; 诸葛孔明 writes down what broke.</p>
+  <ul class="post-list">
+    {% for post in site.posts %}
+    <li>
+      <span class="date">{{ post.date | date: "%Y-%m-%d" }}</span>
+      <a href="{{ post.url }}">{{ post.title }}</a>
+      <div class="excerpt">{{ post.excerpt | strip_html | truncate: 200 }}</div>
+    </li>
+    {% endfor %}
+  </ul>
+</body>
+</html>

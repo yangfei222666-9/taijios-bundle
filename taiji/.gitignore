@@ -1,0 +1,88 @@
+# ── Private modules (NOT open source) ──
+coherent_engine/
+echocore_data/
+echocore/
+
+# ── Secrets ──
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+auth.json
+api_keys.json
+config/voice_bot.json
+
+# ── Runtime data ──
+data/
+*.jsonl
+*.db
+*.db-shm
+*.db-wal
+lancedb_data/
+lancedb_store/
+lancedb_memory*/
+evidence/
+debug_screenshots/
+validation_reports/
+jobs/
+audit_logs/
+
+# ── Personal data ──
+2026世界杯投注记录.md
+memory/
+notes/
+
+# ── Python ──
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+*.egg
+.pytest_cache/
+
+# ── OS ──
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── IDE ──
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ── Logs ──
+*.log
+
+# ── Binary / Model ──
+*.npy
+*.pth
+*.bin
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.webp
+*.mp3
+*.wav
+*.mp4
+*.mov
+
+# ── Allow doc images ──
+!docs/*.png
+*.zip
+*.7z
+*.tar
+*.gz
+*.rar
+*.exe
+*.dll
+*.so
+
+# ── Deploy ──
+.vercel
+.next/
+node_modules/

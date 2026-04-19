@@ -1,0 +1,2192 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="太极OS · 由易经驱动的 AI 操作系统 · 爻位 · 卦象 · 晶体 · Ising 物理场 · 孔明亲笔 · 五将军协同 · 人越多越准">
+<meta name="keywords" content="太极OS, TaijiOS, AI 操作系统, 易经, 诸葛亮, 孔明, 晶体池, zhuge-skill, AI Agent, 国学, solo dev">
+<meta name="author" content="小九 · @taijios">
+<link rel="canonical" href="https://taijios.xyz/">
+<!-- Open Graph -->
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://taijios.xyz/">
+<meta property="og:title" content="太极OS · 易经驱动的 AI 操作系统">
+<meta property="og:description" content="五虎列阵 · Coze Agent 世界社区综合测评 83.6% · 676 Agent 排名前 21.2% · DeepSeek $0.1 打平 Opus $6.5 · 人越多越准的晶体池">
+<meta property="og:image" content="https://taijios.xyz/og.png">
+<meta property="og:locale" content="zh_CN">
+<!-- Twitter -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="太极OS · 易经驱动的 AI 操作系统">
+<meta name="twitter:description" content="五虎列阵 · Coze Agent 世界社区综合测评 83.6% · 676 Agent 排名前 21.2% · DeepSeek $0.1 打平 Opus $6.5 · 人越多越准的晶体池">
+<meta name="twitter:image" content="https://taijios.xyz/og.png">
+<title>太极OS · TaijiOS · 易经驱动的 AI 操作系统</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700;900&family=Noto+Serif+SC:wght@400;500;700;900&family=ZCOOL+XiaoWei&family=Orbitron:wght@500;700;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  /* 赛博易经 · Cyber I-Ching 调色 */
+  --void: #05070d;         /* 深空黑 */
+  --void-soft: #0d1120;    /* 次深 */
+  --void-panel: #12182a;   /* 卡片底 */
+  --ink: #e8f1ff;          /* 霓虹白 */
+  --ink-soft: #a0b4d6;
+  --ink-faint: #6b7a96;
+  --cyan: #00f0ff;         /* 霓虹青 */
+  --cyan-glow: rgba(0,240,255,0.6);
+  --magenta: #ff2e8a;      /* 霓虹洋红 */
+  --magenta-glow: rgba(255,46,138,0.5);
+  --zhusha: #ff3855;       /* 赛博朱砂 */
+  --gold: #ffd94a;         /* 电子金 */
+  --bamboo: #00ff9a;       /* 终端绿 */
+  --paper: var(--ink);     /* 兼容变量 */
+  --paper-deep: var(--void-soft);
+  --zhusha-deep: #cc1e3a;
+  --ink-light: #e8f1ff;
+  --sans: 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  --serif: 'Noto Serif SC', 'Songti SC', 'SimSun', serif;
+  --display: 'Orbitron', 'Noto Serif SC', sans-serif;
+  --mono: 'JetBrains Mono', 'Consolas', monospace;
+  --brush: var(--serif); /* 已废弃 brush · fallback 到 serif */
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--sans);
+  background: radial-gradient(ellipse at center, #0a0f24 0%, #05070f 60%, #020308 100%);
+  color: var(--ink);
+  line-height: 1.7;
+  overflow-x: hidden;
+  font-feature-settings: "liga" 1, "kern" 1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* 星云 · 大片柔软色雾 (stationary) */
+.nebula {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    radial-gradient(ellipse 900px 600px at 15% 20%, rgba(0,180,255,0.12) 0%, transparent 60%),
+    radial-gradient(ellipse 800px 500px at 85% 35%, rgba(180,80,255,0.10) 0%, transparent 60%),
+    radial-gradient(ellipse 700px 500px at 50% 80%, rgba(255,80,160,0.08) 0%, transparent 60%),
+    radial-gradient(ellipse 500px 300px at 75% 90%, rgba(255,200,80,0.06) 0%, transparent 60%);
+  filter: blur(20px);
+  opacity: 0.9;
+  animation: nebula-drift 60s ease-in-out infinite alternate;
+}
+@keyframes nebula-drift {
+  0% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(-20px, 10px) scale(1.05); }
+  100% { transform: translate(15px, -8px) scale(0.98); }
+}
+
+/* 远景星场 · 细小星点 · 慢漂 */
+.stars-far {
+  position: fixed;
+  inset: -100px;
+  pointer-events: none;
+  z-index: 1;
+  background-image:
+    radial-gradient(1px 1px at 12% 8%, rgba(255,255,255,0.9), transparent 50%),
+    radial-gradient(1px 1px at 27% 15%, rgba(220,230,255,0.7), transparent 50%),
+    radial-gradient(1px 1px at 44% 3%, rgba(255,255,255,0.8), transparent 50%),
+    radial-gradient(1px 1px at 63% 18%, rgba(200,220,255,0.6), transparent 50%),
+    radial-gradient(1px 1px at 78% 8%, rgba(255,240,220,0.8), transparent 50%),
+    radial-gradient(1px 1px at 91% 22%, rgba(255,255,255,0.7), transparent 50%),
+    radial-gradient(1px 1px at 6% 33%, rgba(255,255,255,0.9), transparent 50%),
+    radial-gradient(1px 1px at 22% 42%, rgba(220,230,255,0.6), transparent 50%),
+    radial-gradient(1px 1px at 38% 36%, rgba(255,255,255,0.8), transparent 50%),
+    radial-gradient(1px 1px at 55% 48%, rgba(255,255,255,0.5), transparent 50%),
+    radial-gradient(1px 1px at 71% 39%, rgba(200,220,255,0.9), transparent 50%),
+    radial-gradient(1px 1px at 85% 51%, rgba(255,255,255,0.6), transparent 50%),
+    radial-gradient(1px 1px at 15% 62%, rgba(255,240,220,0.7), transparent 50%),
+    radial-gradient(1px 1px at 33% 68%, rgba(255,255,255,0.8), transparent 50%),
+    radial-gradient(1px 1px at 48% 56%, rgba(220,230,255,0.6), transparent 50%),
+    radial-gradient(1px 1px at 64% 72%, rgba(255,255,255,0.9), transparent 50%),
+    radial-gradient(1px 1px at 82% 66%, rgba(200,220,255,0.7), transparent 50%),
+    radial-gradient(1px 1px at 96% 78%, rgba(255,255,255,0.8), transparent 50%),
+    radial-gradient(1px 1px at 9% 86%, rgba(255,255,255,0.6), transparent 50%),
+    radial-gradient(1px 1px at 27% 92%, rgba(220,230,255,0.8), transparent 50%),
+    radial-gradient(1px 1px at 45% 82%, rgba(255,240,220,0.7), transparent 50%),
+    radial-gradient(1px 1px at 58% 96%, rgba(255,255,255,0.9), transparent 50%),
+    radial-gradient(1px 1px at 74% 88%, rgba(200,220,255,0.5), transparent 50%),
+    radial-gradient(1px 1px at 88% 97%, rgba(255,255,255,0.8), transparent 50%);
+  background-size: 100% 100%;
+  animation: twinkle-far 4s ease-in-out infinite;
+}
+@keyframes twinkle-far {
+  0%, 100% { opacity: 0.7; }
+  50% { opacity: 1; }
+}
+
+/* 近景星场 · 大亮星 · 有色 · 反向漂 */
+.stars-near {
+  position: fixed;
+  inset: -50px;
+  pointer-events: none;
+  z-index: 1;
+  background-image:
+    radial-gradient(2px 2px at 18% 25%, rgba(0,240,255,0.95), transparent 50%),
+    radial-gradient(2px 2px at 52% 11%, rgba(255,255,255,1), transparent 50%),
+    radial-gradient(2px 2px at 77% 43%, rgba(255,217,74,0.9), transparent 50%),
+    radial-gradient(2px 2px at 35% 59%, rgba(255,46,138,0.8), transparent 50%),
+    radial-gradient(2px 2px at 68% 77%, rgba(0,240,255,0.9), transparent 50%),
+    radial-gradient(2px 2px at 12% 83%, rgba(255,255,255,1), transparent 50%),
+    radial-gradient(2px 2px at 91% 15%, rgba(255,217,74,0.85), transparent 50%),
+    radial-gradient(3px 3px at 42% 88%, rgba(255,255,255,0.9), transparent 50%),
+    radial-gradient(2px 2px at 60% 30%, rgba(200,220,255,0.85), transparent 50%),
+    radial-gradient(2px 2px at 25% 48%, rgba(255,240,220,0.7), transparent 50%),
+    radial-gradient(3px 3px at 83% 68%, rgba(0,240,255,0.75), transparent 50%),
+    radial-gradient(2px 2px at 47% 94%, rgba(255,46,138,0.6), transparent 50%);
+  background-size: 100% 100%;
+  animation: twinkle-near 3s ease-in-out infinite;
+}
+@keyframes twinkle-near {
+  0%, 100% { opacity: 0.6; transform: translate(0, 0); }
+  50% { opacity: 1; transform: translate(-4px, 2px); }
+}
+
+/* 流星 · 偶发划过 */
+.shooting-star {
+  position: fixed;
+  top: 15%;
+  left: -100px;
+  width: 120px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.9), rgba(0,240,255,0.6), transparent);
+  pointer-events: none;
+  z-index: 2;
+  opacity: 0;
+  transform: rotate(-15deg);
+  animation: shoot 8s ease-in 4s infinite;
+  filter: drop-shadow(0 0 4px rgba(0,240,255,0.8));
+}
+@keyframes shoot {
+  0% { left: -100px; top: 15%; opacity: 0; }
+  2% { opacity: 1; }
+  8% { opacity: 0; left: 110vw; top: 35%; }
+  100% { opacity: 0; left: 110vw; top: 35%; }
+}
+.shooting-star.star-2 {
+  top: 40%;
+  animation: shoot2 11s ease-in 7s infinite;
+  transform: rotate(-8deg);
+}
+@keyframes shoot2 {
+  0% { left: -100px; top: 40%; opacity: 0; }
+  2% { opacity: 1; }
+  6% { opacity: 0; left: 110vw; top: 55%; }
+  100% { opacity: 0; left: 110vw; top: 55%; }
+}
+
+main { position: relative; z-index: 2; }
+
+.wrap { max-width: 1200px; margin: 0 auto; padding: 0 32px; }
+
+/* ════════════════ 顶部 bagua 带 ════════════════ */
+.bagua-band {
+  background: var(--void-soft);
+  color: var(--cyan);
+  text-align: center;
+  padding: 10px 0;
+  font-size: 20px;
+  letter-spacing: 18px;
+  -webkit-user-select: none;
+  user-select: none;
+  overflow: hidden;
+  white-space: nowrap;
+  border-bottom: 1px solid rgba(0,240,255,0.2);
+  text-shadow: 0 0 12px var(--cyan-glow);
+}
+.bagua-band span { display: inline-block; animation: slide 60s linear infinite; }
+@keyframes slide {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+/* ════════════════ Nav ════════════════ */
+nav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(5,7,13,0.82);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(0,240,255,0.18);
+  box-shadow: 0 0 40px rgba(0,240,255,0.08);
+}
+nav .wrap {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 16px;
+  padding-bottom: 16px;
+}
+.logo {
+  font-family: var(--serif);
+  font-weight: 900;
+  font-size: 24px;
+  letter-spacing: 2px;
+  color: var(--ink);
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-shadow: 0 0 16px var(--cyan-glow);
+}
+.logo-taiji {
+  width: 36px;
+  height: 36px;
+  animation: rotate 20s linear infinite;
+  filter: drop-shadow(0 0 6px var(--cyan-glow)) drop-shadow(0 0 12px rgba(255,46,138,0.3));
+}
+@keyframes rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+nav ul { display: flex; gap: 32px; list-style: none; }
+nav a {
+  color: var(--ink-soft);
+  text-decoration: none;
+  font-size: 14px;
+  letter-spacing: 2px;
+  font-family: var(--mono);
+  text-transform: uppercase;
+  transition: all .2s;
+  position: relative;
+}
+nav a:hover {
+  color: var(--cyan);
+  text-shadow: 0 0 12px var(--cyan-glow);
+}
+nav a::before { content: '['; opacity: 0; margin-right: 4px; transition: opacity .2s; }
+nav a::after { content: ']'; opacity: 0; margin-left: 4px; transition: opacity .2s; }
+nav a:hover::before, nav a:hover::after { opacity: 1; color: var(--cyan); }
+
+/* ════════════════ Hero · 顶部 2 栏 · 大标 + 太极圆 ════════════════ */
+.hero.hero-top {
+  min-height: 72vh;
+  padding: 48px 0 32px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.hero-grid {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 40px;
+  align-items: center;
+  width: 100%;
+}
+.hero-left {
+  position: relative;
+  z-index: 3;
+}
+.verti {
+  writing-mode: vertical-rl;
+  font-family: var(--serif);
+  font-weight: 500;
+  font-size: 18px;
+  color: var(--cyan);
+  position: absolute;
+  top: 30px;
+  right: -54px;
+  letter-spacing: 16px;
+  opacity: 0.7;
+  text-shadow: 0 0 16px var(--cyan-glow);
+}
+.hero-title-big {
+  font-family: var(--serif);
+  font-weight: 900;
+  font-size: clamp(64px, 12vw, 168px);
+  line-height: 0.9;
+  letter-spacing: -2px;
+  color: var(--ink);
+  margin-bottom: 20px;
+  display: block;
+  text-align: left;
+  position: relative;
+  text-shadow:
+    0 0 24px var(--cyan-glow),
+    0 0 48px rgba(0,240,255,0.35),
+    3px 0 0 rgba(255,46,138,0.35),
+    -3px 0 0 rgba(0,240,255,0.35);
+}
+.hero-title-big::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -14px;
+  width: 120px;
+  height: 3px;
+  background: linear-gradient(90deg, var(--cyan), transparent);
+  box-shadow: 0 0 20px var(--cyan-glow);
+}
+.hero-top .hero-sub {
+  text-align: left;
+  margin: 32px 0 20px;
+  max-width: 540px;
+  font-size: 18px;
+}
+.hero-top .hero-tag {
+  text-align: left;
+  font-family: var(--mono);
+  font-size: 13px;
+  color: var(--ink-faint);
+  margin-bottom: 36px;
+  letter-spacing: 1px;
+}
+.hero-top .hero-tag::before { content: '> '; color: var(--bamboo); text-shadow: 0 0 8px var(--bamboo); }
+.hero-top .cta-row { justify-content: flex-start; }
+.hero-right {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+}
+.hero-right::before {
+  content: '';
+  position: absolute;
+  width: min(520px, 100%);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(0,240,255,0.25) 0%, rgba(255,46,138,0.15) 40%, transparent 70%);
+  filter: blur(40px);
+  animation: pulse 4s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 0.75; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.06); }
+}
+.taiji-hero {
+  width: min(460px, 90%);
+  aspect-ratio: 1;
+  animation: rotate 50s linear infinite;
+  filter: drop-shadow(0 0 14px var(--cyan-glow)) drop-shadow(0 0 28px rgba(255,46,138,0.35));
+  position: relative;
+  z-index: 1;
+}
+@media (max-width: 900px) {
+  .hero.hero-top { padding: 60px 0 32px; min-height: 0; }
+  .hero-grid { grid-template-columns: 1fr; gap: 40px; }
+  .hero-right { order: -1; }
+  .verti { display: none; }
+  .hero-title-big { text-align: center; font-size: clamp(64px, 16vw, 128px); }
+  .hero-title-big::after { left: 50%; transform: translateX(-50%); }
+  .hero-top .hero-sub, .hero-top .hero-tag { text-align: center; margin-left: auto; margin-right: auto; }
+  .hero-top .cta-row { justify-content: center; }
+}
+
+/* ════════════════ 丞相列阵 (section 2 · 跟在 Hero 后) ════════════════ */
+.hero.hero-full {
+  min-height: 0;
+  padding: 56px 24px 56px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 24px;
+  overflow: hidden;
+}
+
+/* 超大背景"三国"水印 */
+.hero-bg-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: var(--serif);
+  font-weight: 900;
+  font-size: clamp(280px, 46vw, 720px);
+  color: rgba(0,240,255,0.025);
+  letter-spacing: 80px;
+  pointer-events: none;
+  z-index: 0;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.hero-head {
+  max-width: 900px;
+  text-align: center;
+  position: relative;
+  z-index: 3;
+}
+.hero-head .hero-tag {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 6px;
+  color: var(--cyan);
+  margin-top: 12px;
+  opacity: 0.6;
+  text-shadow: 0 0 12px var(--cyan-glow);
+}
+
+/* 丞相印 · 中央 · 印章风 */
+.zhuge-stage {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 0;
+}
+.zhuge-seal {
+  position: relative;
+  width: clamp(200px, 20vw, 260px);
+  padding: 20px;
+  background: linear-gradient(180deg, rgba(255,46,90,0.15), rgba(166,30,58,0.1));
+  border: 3px solid var(--zhusha);
+  box-shadow:
+    0 0 48px rgba(255,56,85,0.35),
+    inset 0 0 24px rgba(255,56,85,0.18),
+    0 0 80px rgba(255,217,74,0.15);
+  animation: seal-float 8s ease-in-out infinite;
+}
+.zhuge-seal::before {
+  content: '';
+  position: absolute;
+  inset: 8px;
+  border: 1px solid rgba(255,217,74,0.6);
+  pointer-events: none;
+}
+@keyframes seal-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+.seal-taiji {
+  width: 48px;
+  height: 48px;
+  display: block;
+  margin: 0 auto 8px;
+  filter: drop-shadow(0 0 12px rgba(0,240,255,0.5));
+  animation: rotate 40s linear infinite;
+}
+.seal-body {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+}
+.seal-char {
+  font-family: var(--serif);
+  font-weight: 900;
+  font-size: clamp(50px, 5.5vw, 76px);
+  line-height: 1;
+  color: var(--gold);
+  text-shadow:
+    0 0 24px rgba(255,217,74,0.7),
+    0 0 48px rgba(255,56,85,0.4),
+    2px 2px 0 rgba(166,30,58,0.6);
+}
+.zhuge-label {
+  margin-top: 12px;
+  text-align: center;
+  position: relative;
+  z-index: 3;
+}
+.zhuge-name {
+  font-family: var(--serif);
+  font-weight: 900;
+  font-size: clamp(18px, 2vw, 26px);
+  letter-spacing: 6px;
+  color: var(--gold);
+  text-shadow: 0 0 20px rgba(255,217,74,0.5), 0 0 40px rgba(255,217,74,0.2);
+  margin-bottom: 4px;
+}
+.zhuge-role {
+  font-family: var(--serif);
+  font-weight: 500;
+  font-size: clamp(12px, 1.2vw, 14px);
+  letter-spacing: 4px;
+  color: var(--ink-soft);
+}
+
+/* 五虎上将 · 横排 */
+.tigers-row {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
+  max-width: 1100px;
+  width: 100%;
+  position: relative;
+  z-index: 2;
+}
+.tiger {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 14px 10px 16px;
+  background: linear-gradient(180deg, rgba(18,24,42,0.5), rgba(10,15,32,0.3));
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(0,240,255,0.12);
+  border-top: 2px solid var(--tiger-color, var(--cyan));
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 14px), calc(100% - 14px) 100%, 0 100%);
+  transition: all .3s;
+  position: relative;
+  cursor: default;
+}
+.tiger::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 0%, var(--tiger-glow, rgba(0,240,255,0.1)) 0%, transparent 60%);
+  pointer-events: none;
+  opacity: 0.6;
+}
+.tiger:hover {
+  transform: translateY(-8px);
+  border-color: var(--tiger-color, var(--cyan));
+  box-shadow: 0 16px 40px rgba(0,0,0,0.5), 0 0 32px var(--tiger-glow, rgba(0,240,255,0.2));
+}
+.tiger-guan   { --tiger-color: #ff3838; --tiger-glow: rgba(255,56,56,0.3); }
+.tiger-zhang  { --tiger-color: #4aa3ff; --tiger-glow: rgba(74,163,255,0.3); }
+.tiger-zhao   { --tiger-color: #00f0ff; --tiger-glow: rgba(0,240,255,0.3); }
+.tiger-ma     { --tiger-color: #c9a8ff; --tiger-glow: rgba(201,168,255,0.3); }
+.tiger-huang  { --tiger-color: #ffd94a; --tiger-glow: rgba(255,217,74,0.3); }
+
+.tiger-seal {
+  width: 100%;
+  max-width: 112px;
+  aspect-ratio: 1;
+  position: relative;
+  background: linear-gradient(180deg, rgba(18,24,42,0.85), rgba(10,15,32,0.6));
+  border: 2px solid var(--tiger-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 10px;
+  box-shadow:
+    inset 0 0 16px var(--tiger-glow),
+    0 0 24px var(--tiger-glow);
+  transition: all .3s;
+}
+.tiger-seal::before {
+  content: '';
+  position: absolute;
+  inset: 5px;
+  border: 1px solid var(--tiger-color);
+  opacity: 0.5;
+  pointer-events: none;
+}
+.tiger:hover .tiger-seal {
+  box-shadow:
+    inset 0 0 24px var(--tiger-glow),
+    0 0 40px var(--tiger-glow),
+    0 8px 24px rgba(0,0,0,0.5);
+  transform: scale(1.04);
+}
+.tiger-seal-char {
+  font-family: var(--serif);
+  font-weight: 900;
+  font-size: clamp(44px, 5vw, 60px);
+  line-height: 1;
+  color: var(--tiger-color);
+  text-shadow:
+    0 0 16px var(--tiger-glow),
+    0 0 32px var(--tiger-glow),
+    2px 2px 0 rgba(0,0,0,0.5);
+}
+.tiger-weapon {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  font-family: var(--serif);
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--tiger-color);
+  opacity: 0.75;
+  z-index: 2;
+  letter-spacing: 1px;
+}
+.tiger-name {
+  font-family: var(--serif);
+  font-weight: 900;
+  font-size: 17px;
+  letter-spacing: 3px;
+  color: var(--ink);
+  margin-bottom: 4px;
+  text-shadow: 0 0 12px var(--tiger-glow, var(--cyan-glow));
+}
+.tiger-role {
+  font-family: var(--serif);
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 2px;
+  color: var(--tiger-color, var(--cyan));
+  margin-bottom: 4px;
+}
+.tiger-code {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.5px;
+  color: var(--ink-faint);
+  text-align: center;
+}
+
+/* 将军详情 · hover 弹浮卡 */
+.tiger { position: relative; }
+.tiger-detail {
+  position: absolute;
+  bottom: calc(100% + 18px);
+  left: 50%;
+  transform: translateX(-50%) translateY(12px);
+  width: 300px;
+  max-width: 85vw;
+  padding: 22px 24px;
+  background: linear-gradient(135deg, rgba(10,15,32,0.96), rgba(18,24,42,0.94));
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  border: 1px solid var(--tiger-color);
+  box-shadow:
+    0 12px 40px rgba(0,0,0,0.7),
+    0 0 48px var(--tiger-glow),
+    inset 0 0 16px rgba(0,0,0,0.3);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .28s ease, transform .28s ease;
+  z-index: 50;
+  clip-path: polygon(12px 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%, 0 12px);
+  text-align: left;
+}
+.tiger-detail::before {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 14px;
+  height: 14px;
+  background: var(--tiger-color);
+  clip-path: polygon(50% 100%, 0 0, 100% 0);
+  opacity: 0.8;
+  box-shadow: 0 0 12px var(--tiger-glow);
+}
+.tiger:hover .tiger-detail {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+  pointer-events: auto;
+}
+.tiger-detail-title {
+  font-family: var(--serif);
+  font-weight: 900;
+  font-size: 17px;
+  color: var(--tiger-color);
+  margin-bottom: 12px;
+  letter-spacing: 3px;
+  text-align: center;
+  text-shadow: 0 0 12px var(--tiger-glow);
+}
+.tiger-detail-body {
+  font-family: var(--sans);
+  font-size: 13px;
+  line-height: 1.8;
+  color: var(--ink-soft);
+  margin-bottom: 14px;
+}
+.tiger-detail-code {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 1px;
+  color: var(--bamboo);
+  padding-top: 10px;
+  border-top: 1px dashed rgba(0,255,154,0.25);
+  text-align: center;
+  text-transform: uppercase;
+}
+/* 移动端: 详情默认在下方显示 · 不走 hover */
+@media (max-width: 600px) {
+  .tiger-detail {
+    position: static;
+    transform: none;
+    opacity: 1;
+    pointer-events: auto;
+    width: 100%;
+    max-width: none;
+    margin-top: 12px;
+    padding: 16px;
+    font-size: 12px;
+  }
+  .tiger-detail::before { display: none; }
+  .tiger:hover .tiger-detail { transform: none; }
+  .tiger-detail-title { font-size: 14px; }
+  .tiger-detail-body { font-size: 12px; }
+}
+h1.hero-title {
+  font-family: var(--serif);
+  font-weight: 900;
+  font-size: clamp(48px, 7vw, 88px);
+  line-height: 1;
+  letter-spacing: 4px;
+  color: var(--ink);
+  margin-bottom: 16px;
+  position: relative;
+  display: inline-block;
+  text-shadow:
+    0 0 20px var(--cyan-glow),
+    0 0 40px rgba(0,240,255,0.3),
+    2px 0 0 var(--magenta-glow),
+    -2px 0 0 var(--cyan-glow);
+  animation: glitch 6s ease-in-out infinite;
+}
+@keyframes glitch {
+  0%, 92%, 100% { text-shadow: 0 0 20px var(--cyan-glow), 0 0 40px rgba(0,240,255,0.3), 2px 0 0 var(--magenta-glow), -2px 0 0 var(--cyan-glow); }
+  93% { text-shadow: 3px 0 0 var(--magenta), -3px 0 0 var(--cyan), 0 0 30px var(--cyan-glow); }
+  94% { text-shadow: -4px 0 0 var(--magenta), 4px 0 0 var(--cyan); }
+  95% { text-shadow: 0 0 20px var(--cyan-glow); }
+  96% { text-shadow: 2px 2px 0 var(--magenta), -2px -2px 0 var(--cyan); }
+}
+h1.hero-title::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: -8px;
+  width: 64px;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+  box-shadow: 0 0 20px var(--cyan-glow);
+}
+.hero-sub {
+  font-size: 17px;
+  line-height: 1.6;
+  color: var(--ink-soft);
+  margin: 20px auto 0;
+  max-width: 640px;
+  letter-spacing: 1px;
+}
+.hero-sub strong { color: var(--cyan); text-shadow: 0 0 12px var(--cyan-glow); font-weight: 700; }
+.cta-row { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; margin-top: 12px; }
+.btn {
+  display: inline-block;
+  padding: 14px 28px;
+  font-family: var(--mono);
+  font-size: 14px;
+  text-decoration: none;
+  border-radius: 0;
+  transition: all .25s;
+  cursor: pointer;
+  border: none;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  position: relative;
+  clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px));
+}
+.btn-primary {
+  background: var(--cyan);
+  color: var(--void);
+  border: 2px solid var(--cyan);
+  box-shadow: 0 0 24px var(--cyan-glow), inset 0 0 12px rgba(0,240,255,0.3);
+}
+.btn-primary:hover {
+  background: var(--magenta);
+  border-color: var(--magenta);
+  color: var(--ink);
+  box-shadow: 0 0 32px var(--magenta-glow), inset 0 0 16px rgba(255,46,138,0.4);
+  transform: translateY(-2px);
+}
+.btn-ghost {
+  background: transparent;
+  color: var(--cyan);
+  border: 2px solid var(--cyan);
+  box-shadow: inset 0 0 0 rgba(0,240,255,0), 0 0 0 rgba(0,240,255,0);
+}
+.btn-ghost:hover {
+  background: rgba(0,240,255,0.1);
+  color: var(--ink);
+  box-shadow: 0 0 24px var(--cyan-glow), inset 0 0 20px rgba(0,240,255,0.1);
+  transform: translateY(-2px);
+}
+
+/* 太极 · SVG 大图 · 霓虹光环 */
+.hero-right { display: flex; justify-content: center; position: relative; }
+.hero-right::before {
+  content: '';
+  position: absolute;
+  width: min(520px, 100%);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(0,240,255,0.25) 0%, rgba(255,46,138,0.15) 40%, transparent 70%);
+  filter: blur(40px);
+  animation: pulse 4s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 0.8; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.08); }
+}
+.taiji-large {
+  width: min(440px, 90%);
+  aspect-ratio: 1;
+  animation: rotate 40s linear infinite;
+  filter: drop-shadow(0 0 12px var(--cyan-glow)) drop-shadow(0 0 24px rgba(255,46,138,0.4));
+  position: relative;
+  z-index: 1;
+}
+
+/* ════════════════ Section 通用 ════════════════ */
+section { padding: 96px 0; position: relative; }
+.section-title {
+  font-family: var(--serif);
+  font-weight: 900;
+  font-size: clamp(40px, 6vw, 64px);
+  letter-spacing: 2px;
+  margin-bottom: 16px;
+  color: var(--ink);
+  text-align: center;
+  position: relative;
+  text-shadow: 0 0 24px var(--cyan-glow), 0 0 48px rgba(0,240,255,0.3);
+}
+.section-title::before,
+.section-title::after {
+  content: '◆';
+  color: var(--cyan);
+  font-size: 18px;
+  margin: 0 28px;
+  vertical-align: middle;
+  opacity: 0.6;
+  text-shadow: 0 0 12px var(--cyan-glow);
+}
+.section-sub {
+  font-size: 16px;
+  color: var(--ink-faint);
+  text-align: center;
+  margin-bottom: 64px;
+  font-family: var(--mono);
+  letter-spacing: 1px;
+}
+
+/* ════════════════ 考场对比 ════════════════ */
+.exam-section { background: var(--void-soft); color: var(--ink); position: relative; }
+.exam-section::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at center top, rgba(255,217,74,0.08), transparent 60%);
+  pointer-events: none;
+}
+.exam-section .wrap { position: relative; z-index: 1; }
+.exam-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  margin-bottom: 48px;
+}
+.exam-card {
+  border: 1px solid rgba(0,240,255,0.2);
+  background: rgba(18,24,42,0.6);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  padding: 40px 32px;
+  text-align: center;
+  position: relative;
+  transition: all .3s;
+  clip-path: polygon(0 0, calc(100% - 16px) 0, 100% 16px, 100% 100%, 16px 100%, 0 calc(100% - 16px));
+}
+.exam-card:hover {
+  border-color: var(--cyan);
+  box-shadow: 0 0 32px rgba(0,240,255,0.2);
+}
+.exam-card.winner {
+  border: 1px solid var(--gold);
+  background: linear-gradient(135deg, rgba(255,217,74,0.12), rgba(255,46,138,0.08) 60%, transparent);
+  transform: scale(1.05);
+  box-shadow: 0 0 48px rgba(255,217,74,0.25), 0 0 80px rgba(255,46,138,0.15);
+}
+.exam-card.winner::before {
+  content: '★';
+  position: absolute;
+  top: -18px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--gold);
+  color: var(--void);
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  font-weight: 900;
+  box-shadow: 0 0 20px var(--gold);
+}
+.exam-model {
+  font-family: var(--serif);
+  font-weight: 700;
+  font-size: 24px;
+  letter-spacing: 1px;
+  margin-bottom: 16px;
+  color: var(--ink);
+}
+.exam-card.winner .exam-model { color: var(--gold); text-shadow: 0 0 12px rgba(255,217,74,0.5); }
+.exam-cost {
+  font-family: var(--mono);
+  font-size: 13px;
+  color: var(--bamboo);
+  margin-bottom: 24px;
+  letter-spacing: 1px;
+}
+.exam-score {
+  font-size: 72px;
+  font-weight: 900;
+  line-height: 1;
+  font-family: var(--mono);
+  margin-bottom: 8px;
+  color: var(--cyan);
+  text-shadow: 0 0 24px var(--cyan-glow);
+}
+.exam-card.winner .exam-score {
+  color: var(--gold);
+  text-shadow: 0 0 24px rgba(255,217,74,0.6), 0 0 48px rgba(255,217,74,0.3);
+}
+.exam-pct {
+  font-size: 16px;
+  color: var(--ink-soft);
+  margin-bottom: 24px;
+  font-family: var(--mono);
+}
+.exam-perfect {
+  font-size: 13px;
+  color: var(--magenta);
+  line-height: 1.8;
+  font-family: var(--mono);
+}
+.exam-insight {
+  text-align: center;
+  font-family: var(--serif);
+  font-weight: 900;
+  font-size: clamp(22px, 3.5vw, 32px);
+  letter-spacing: 6px;
+  color: var(--magenta);
+  margin-top: 32px;
+  padding: 36px;
+  border-top: 1px solid rgba(0,240,255,0.15);
+  border-bottom: 1px solid rgba(0,240,255,0.15);
+  text-shadow: 0 0 20px var(--magenta-glow);
+}
+.exam-note {
+  text-align: center;
+  font-size: 12px;
+  color: var(--ink-faint);
+  margin-top: 32px;
+  font-family: var(--mono);
+  letter-spacing: 1px;
+}
+.exam-note a { color: var(--cyan); text-decoration: none; border-bottom: 1px dotted var(--cyan); }
+
+/* ════════════════ 进化时间线 ════════════════ */
+.evolution-section {
+  position: relative;
+  background: linear-gradient(180deg, var(--void) 0%, rgba(10,15,36,0.6) 50%, var(--void) 100%);
+}
+.timeline {
+  position: relative;
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 40px 0 20px;
+}
+.timeline::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  transform: translateX(-50%);
+  background: linear-gradient(180deg, transparent 0%, var(--cyan) 8%, var(--cyan) 70%, var(--gold) 80%, rgba(255,217,74,0.4) 100%);
+  box-shadow: 0 0 12px var(--cyan-glow);
+}
+.tl-node {
+  position: relative;
+  width: 50%;
+  padding: 24px 48px;
+  box-sizing: border-box;
+}
+.tl-node.tl-left { padding-right: 60px; text-align: right; }
+.tl-node.tl-right { margin-left: 50%; padding-left: 60px; text-align: left; }
+.tl-dot {
+  position: absolute;
+  top: 32px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--void);
+  border: 2px solid var(--cyan);
+  box-shadow: 0 0 16px var(--cyan-glow), inset 0 0 6px rgba(0,240,255,0.6);
+  z-index: 2;
+  animation: tl-pulse 2.5s ease-in-out infinite;
+}
+.tl-node.tl-left .tl-dot { right: -9px; }
+.tl-node.tl-right .tl-dot { left: -9px; }
+.tl-dot.tl-dot-gold {
+  border-color: var(--gold);
+  box-shadow: 0 0 24px rgba(255,217,74,0.6), inset 0 0 8px rgba(255,217,74,0.6);
+  width: 22px;
+  height: 22px;
+}
+.tl-node.tl-left .tl-dot-gold { right: -11px; }
+.tl-node.tl-right .tl-dot-gold { left: -11px; }
+.tl-dot.tl-dot-future {
+  border-color: var(--magenta);
+  border-style: dashed;
+  box-shadow: 0 0 12px var(--magenta-glow);
+  background: transparent;
+}
+@keyframes tl-pulse {
+  0%, 100% { transform: scale(1); opacity: 0.9; }
+  50% { transform: scale(1.2); opacity: 1; }
+}
+.tl-card {
+  background: linear-gradient(135deg, rgba(18,24,42,0.8), rgba(10,15,32,0.4));
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(0,240,255,0.2);
+  padding: 20px 24px;
+  transition: all .3s;
+  clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px));
+  display: inline-block;
+  max-width: 100%;
+}
+.tl-card:hover {
+  border-color: var(--cyan);
+  transform: translateY(-4px);
+  box-shadow: 0 8px 32px rgba(0,240,255,0.15);
+}
+.tl-card-highlight {
+  border-color: var(--gold);
+  background: linear-gradient(135deg, rgba(255,217,74,0.12), rgba(255,56,85,0.05));
+  box-shadow: 0 0 32px rgba(255,217,74,0.2);
+}
+.tl-card-highlight:hover {
+  border-color: var(--gold);
+  box-shadow: 0 8px 40px rgba(255,217,74,0.3);
+}
+.tl-card-future {
+  border-color: rgba(201,168,255,0.4);
+  border-style: dashed;
+  opacity: 0.85;
+}
+.tl-card-future:hover {
+  border-color: var(--magenta);
+  opacity: 1;
+}
+.tl-date {
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 2px;
+  color: var(--cyan);
+  margin-bottom: 6px;
+  text-transform: uppercase;
+}
+.tl-card-highlight .tl-date { color: var(--gold); }
+.tl-card-future .tl-date { color: var(--magenta); }
+.tl-title {
+  font-family: var(--serif);
+  font-weight: 900;
+  font-size: 20px;
+  letter-spacing: 2px;
+  color: var(--ink);
+  margin-bottom: 10px;
+  line-height: 1.3;
+}
+.tl-card-highlight .tl-title {
+  color: var(--gold);
+  text-shadow: 0 0 16px rgba(255,217,74,0.4);
+}
+.tl-desc {
+  font-family: var(--sans);
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--ink-soft);
+}
+.tl-link {
+  color: var(--gold);
+  text-decoration: none;
+  border-bottom: 1px dotted var(--gold);
+  padding-bottom: 1px;
+  transition: all .2s;
+}
+.tl-link:hover {
+  text-shadow: 0 0 12px rgba(255,217,74,0.6);
+}
+@media (max-width: 900px) {
+  .timeline::before { left: 20px; }
+  .tl-node, .tl-node.tl-left, .tl-node.tl-right {
+    width: 100%;
+    margin-left: 0;
+    padding: 16px 20px 16px 50px;
+    text-align: left;
+  }
+  .tl-node.tl-left .tl-dot, .tl-node.tl-right .tl-dot,
+  .tl-node.tl-left .tl-dot-gold, .tl-node.tl-right .tl-dot-gold {
+    left: 12px;
+    right: auto;
+  }
+  .tl-title { font-size: 17px; }
+  .tl-desc { font-size: 12px; }
+}
+
+/* ════════════════ 五将军 · 调度详图 ════════════════ */
+.generals-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 20px;
+}
+.general {
+  --g-color: var(--cyan);
+  --g-glow: var(--cyan-glow);
+  background: linear-gradient(135deg, rgba(18,24,42,0.85), rgba(10,15,32,0.5));
+  border: 1px solid rgba(255,255,255,0.06);
+  border-top: 2px solid var(--g-color);
+  padding: 22px 22px 24px;
+  transition: all .3s;
+  position: relative;
+  overflow: hidden;
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 14px), calc(100% - 14px) 100%, 0 100%);
+}
+.general::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 0%, var(--g-glow) 0%, transparent 50%);
+  opacity: 0.3;
+  pointer-events: none;
+}
+.general:hover {
+  transform: translateY(-6px);
+  border-color: var(--g-color);
+  box-shadow: 0 16px 40px rgba(0,0,0,0.45), 0 0 32px var(--g-glow);
+}
+/* 每位将军的主色 (与 Hero 五虎卡一致) */
+.general-guan   { --g-color: #ff3838; --g-glow: rgba(255,56,56,0.3); }
+.general-zhang  { --g-color: #4aa3ff; --g-glow: rgba(74,163,255,0.3); }
+.general-zhao   { --g-color: #00f0ff; --g-glow: rgba(0,240,255,0.3); }
+.general-ma     { --g-color: #c9a8ff; --g-glow: rgba(201,168,255,0.3); }
+.general-huang  { --g-color: #ffd94a; --g-glow: rgba(255,217,74,0.3); }
+
+.general-tag {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 3px;
+  color: var(--g-color);
+  text-transform: uppercase;
+  padding: 4px 10px;
+  display: inline-block;
+  border: 1px solid var(--g-color);
+  margin-bottom: 16px;
+  opacity: 0.9;
+  text-shadow: 0 0 8px var(--g-glow);
+}
+.general-head {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 18px;
+  position: relative;
+  z-index: 1;
+}
+.general-seal {
+  flex: 0 0 auto;
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--serif);
+  font-weight: 900;
+  font-size: 40px;
+  color: var(--g-color);
+  border: 2px solid var(--g-color);
+  background: rgba(0,0,0,0.4);
+  text-shadow: 0 0 12px var(--g-glow);
+  box-shadow: inset 0 0 10px var(--g-glow);
+  position: relative;
+}
+.general-seal::after {
+  content: '';
+  position: absolute;
+  inset: 3px;
+  border: 1px solid var(--g-color);
+  opacity: 0.5;
+}
+.general-role {
+  font-family: var(--serif);
+  font-weight: 900;
+  font-size: 20px;
+  letter-spacing: 2px;
+  margin-bottom: 4px;
+  color: var(--ink);
+  text-shadow: 0 0 12px var(--g-glow);
+}
+.general-name {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--bamboo);
+  letter-spacing: 1px;
+}
+.general-name::before { content: '// '; opacity: 0.5; }
+.general-flow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 1px;
+  color: var(--ink-soft);
+  padding: 10px 14px;
+  background: rgba(0,0,0,0.35);
+  border-left: 2px solid var(--g-color);
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  position: relative;
+  z-index: 1;
+}
+.general-flow .arrow { color: var(--g-color); font-weight: 700; text-shadow: 0 0 8px var(--g-glow); }
+.general-flow .out { color: var(--g-color); font-weight: 700; }
+.general-desc {
+  font-size: 13px;
+  color: var(--ink-soft);
+  line-height: 1.75;
+  position: relative;
+  z-index: 1;
+}
+.generals-note {
+  text-align: center;
+  margin-top: 40px;
+  font-size: 13px;
+  color: var(--ink-faint);
+  font-family: var(--sans);
+  line-height: 1.8;
+  max-width: 720px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.generals-note .hl-gold {
+  color: var(--gold);
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-shadow: 0 0 12px rgba(255,217,74,0.4);
+}
+.generals-note code {
+  font-family: var(--mono);
+  color: var(--bamboo);
+  font-size: 11px;
+  background: rgba(0,0,0,0.4);
+  padding: 2px 8px;
+  border-left: 2px solid var(--bamboo);
+}
+
+/* ════════════════ 架构 ════════════════ */
+.arch-section { background: linear-gradient(180deg, var(--void) 0%, var(--void-soft) 50%, var(--void) 100%); position: relative; }
+.arch-section::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 30% 50%, rgba(0,240,255,0.1) 0%, transparent 40%),
+    radial-gradient(circle at 70% 50%, rgba(255,46,138,0.08) 0%, transparent 40%);
+  pointer-events: none;
+}
+.arch-section .wrap { position: relative; z-index: 1; }
+.arch-flow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin-top: 48px;
+}
+.arch-node {
+  background: rgba(18,24,42,0.8);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  color: var(--cyan);
+  padding: 28px 36px;
+  border: 1px solid var(--cyan);
+  text-align: center;
+  min-width: 180px;
+  position: relative;
+  font-family: var(--serif);
+  font-weight: 700;
+  font-size: 22px;
+  letter-spacing: 3px;
+  box-shadow: 0 0 24px rgba(0,240,255,0.15), inset 0 0 12px rgba(0,240,255,0.05);
+  clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+  text-shadow: 0 0 12px var(--cyan-glow);
+  transition: all .3s;
+}
+.arch-node:hover {
+  border-color: var(--magenta);
+  color: var(--magenta);
+  text-shadow: 0 0 16px var(--magenta-glow);
+  box-shadow: 0 0 32px rgba(255,46,138,0.2);
+}
+.arch-node .sub {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--bamboo);
+  margin-top: 6px;
+  letter-spacing: 2px;
+  text-shadow: none;
+}
+.arch-arrow {
+  color: var(--cyan);
+  font-size: 32px;
+  font-weight: bold;
+  text-shadow: 0 0 16px var(--cyan-glow);
+  animation: arrow-pulse 2s ease-in-out infinite;
+}
+@keyframes arrow-pulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+.arch-footnote {
+  text-align: center;
+  margin-top: 48px;
+  color: var(--ink-faint);
+  font-size: 13px;
+  font-family: var(--mono);
+}
+.arch-footnote a {
+  color: var(--cyan);
+  text-decoration: none;
+  border-bottom: 1px dotted var(--cyan);
+  padding-bottom: 2px;
+}
+.arch-footnote a:hover {
+  text-shadow: 0 0 12px var(--cyan-glow);
+}
+
+/* ════════════════ 晶体池邀请 ════════════════ */
+.invite-section {
+  background: var(--void);
+  color: var(--ink);
+  position: relative;
+}
+.invite-section::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(135deg, rgba(0,240,255,0.08) 0%, transparent 50%),
+    linear-gradient(225deg, rgba(255,46,138,0.06) 0%, transparent 50%);
+  pointer-events: none;
+}
+.invite-section .wrap { position: relative; z-index: 1; }
+.invite-lead {
+  font-family: var(--serif);
+  font-weight: 700;
+  font-size: clamp(24px, 4vw, 36px);
+  letter-spacing: 4px;
+  text-align: center;
+  color: var(--gold);
+  margin-bottom: 48px;
+  line-height: 1.6;
+  text-shadow: 0 0 20px rgba(255,217,74,0.4);
+}
+.invite-box {
+  max-width: 820px;
+  margin: 0 auto;
+  background: linear-gradient(135deg, rgba(18,24,42,0.8), rgba(13,17,32,0.6));
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(0,240,255,0.2);
+  padding: 48px;
+  clip-path: polygon(20px 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%, 0 20px);
+  box-shadow: 0 0 48px rgba(0,240,255,0.1);
+}
+.invite-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 24px;
+  margin-bottom: 28px;
+  padding-bottom: 24px;
+  border-bottom: 1px dashed rgba(0,240,255,0.1);
+}
+.invite-step:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+.invite-step-n {
+  font-family: var(--display);
+  font-weight: 900;
+  font-size: 36px;
+  color: var(--cyan);
+  min-width: 56px;
+  text-shadow: 0 0 16px var(--cyan-glow);
+  line-height: 1;
+  letter-spacing: 2px;
+}
+.invite-step-body { flex: 1; padding-top: 4px; }
+.invite-step-title {
+  font-size: 18px;
+  color: var(--ink);
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+.invite-step-desc {
+  font-size: 13px;
+  color: var(--ink-faint);
+  font-family: var(--mono);
+}
+pre.code {
+  background: #000308;
+  color: #d4d4d4;
+  padding: 20px 24px;
+  font-family: var(--mono);
+  font-size: 13px;
+  line-height: 1.6;
+  overflow-x: auto;
+  margin-top: 16px;
+  border: 1px solid rgba(0,240,255,0.15);
+  border-left: 3px solid var(--cyan);
+  box-shadow: inset 0 0 12px rgba(0,240,255,0.05);
+  position: relative;
+}
+pre.code::before {
+  content: '';
+  position: absolute;
+  top: 8px;
+  right: 12px;
+  width: 10px;
+  height: 10px;
+  background: var(--bamboo);
+  border-radius: 50%;
+  box-shadow: 0 0 8px var(--bamboo);
+  animation: blink 1.8s ease-in-out infinite;
+}
+@keyframes blink {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
+}
+.code-comment { color: #5a7a6a; }
+.code-cmd { color: var(--bamboo); }
+.code-arg { color: var(--magenta); }
+
+.invite-cta {
+  text-align: center;
+  margin-top: 48px;
+}
+
+/* ════════════════ Footer ════════════════ */
+footer {
+  background: var(--void-soft);
+  color: var(--ink-faint);
+  padding: 64px 0 32px;
+  text-align: center;
+  border-top: 1px solid rgba(0,240,255,0.2);
+  position: relative;
+}
+footer::before {
+  content: '';
+  position: absolute;
+  top: -1px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+  box-shadow: 0 0 20px var(--cyan-glow);
+}
+footer .persona {
+  font-family: var(--serif);
+  font-weight: 700;
+  font-size: 24px;
+  letter-spacing: 3px;
+  color: var(--cyan);
+  margin-bottom: 12px;
+  text-shadow: 0 0 16px var(--cyan-glow);
+}
+footer .bio {
+  font-size: 13px;
+  margin-bottom: 32px;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+  font-family: var(--mono);
+  line-height: 1.8;
+}
+footer .links {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  margin-bottom: 32px;
+  flex-wrap: wrap;
+}
+footer .links a {
+  color: var(--ink-soft);
+  text-decoration: none;
+  font-size: 12px;
+  font-family: var(--mono);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  padding: 6px 12px;
+  border: 1px solid rgba(0,240,255,0.2);
+  transition: all .2s;
+}
+footer .links a:hover {
+  color: var(--cyan);
+  border-color: var(--cyan);
+  box-shadow: 0 0 16px var(--cyan-glow);
+  text-shadow: 0 0 8px var(--cyan-glow);
+}
+footer .copy {
+  font-size: 11px;
+  color: var(--ink-faint);
+  font-family: var(--mono);
+  letter-spacing: 2px;
+  opacity: 0.5;
+}
+
+/* ════════════════ 响应式 ════════════════ */
+@media (max-width: 900px) {
+  .exam-grid { grid-template-columns: 1fr; gap: 16px; }
+  .exam-card.winner { transform: none; }
+  nav ul { gap: 14px; font-size: 12px; }
+  nav .logo { font-size: 20px; }
+  .section-title { font-size: 36px; }
+  .arch-flow { flex-direction: column; }
+  .arch-arrow { transform: rotate(90deg); }
+  .invite-box { padding: 28px 20px; }
+  .invite-step { gap: 16px; }
+  .invite-step-n { font-size: 28px; min-width: 44px; }
+  .hero.hero-full { padding: 80px 16px 24px; }
+  h1.hero-title { letter-spacing: 2px; font-size: clamp(42px, 10vw, 64px); }
+  .tigers-row { grid-template-columns: repeat(5, minmax(110px, 1fr)); gap: 8px; overflow-x: auto; padding-bottom: 8px; }
+  .tiger { padding: 14px 8px; }
+  .tiger-mask { width: 84px; height: 100px; }
+  .tiger-name { font-size: 13px; letter-spacing: 2px; }
+  .tiger-role { font-size: 11px; }
+  .tiger-code { font-size: 9px; }
+  .zhuge-fig { width: 240px; }
+  .zhuge-name { font-size: 22px; letter-spacing: 6px; }
+  .hero-bg-text { font-size: 40vw; letter-spacing: 40px; }
+}
+@media (max-width: 600px) {
+  .wrap { padding: 0 20px; }
+  .hero-sub { font-size: 14px; letter-spacing: 0.5px; }
+  .btn { padding: 12px 18px; font-size: 11px; }
+  .tigers-row { grid-template-columns: repeat(3, minmax(110px, 1fr)); grid-auto-rows: auto; grid-template-rows: 1fr 1fr; }
+  .tigers-row .tiger:nth-child(4) { grid-column: 1 / 3; grid-row: 2; }
+  .tigers-row .tiger:nth-child(5) { grid-column: 3 / 4; grid-row: 2; }
+}
+</style>
+</head>
+<body>
+
+<!-- 星空背景层 (固定 · 无鼠标干扰) -->
+<div class="nebula"></div>
+<div class="stars-far"></div>
+<div class="stars-near"></div>
+<div class="shooting-star"></div>
+<div class="shooting-star star-2"></div>
+
+<!-- 64 卦装饰条 -->
+<div class="bagua-band">
+  <span>☰  ☱  ☲  ☳  ☴  ☵  ☶  ☷   ䷀  ䷁  ䷂  ䷃  ䷄  ䷅  ䷆  ䷇  ䷈  ䷉  ䷊  ䷋  ䷌  ䷍  ䷎  ䷏  ䷐  ䷑  ䷒  ䷓  ䷔  ䷕  ䷖  ䷗  ䷘  ䷙  ䷚  ䷛  ䷜  ䷝  ䷞  ䷟  ䷠  ䷡  ䷢  ䷣  ䷤  ䷥  ䷦  ䷧  ䷨  ䷩  ䷪  ䷫  ䷬  ䷭  ䷮  ䷯  ䷰  ䷱  ䷲  ䷳  ䷴  ䷵  ䷶  ䷷  ䷸  ䷹  ䷺  ䷻  ䷼  ䷽  ䷾  ䷿   ☰  ☱  ☲  ☳  ☴  ☵  ☶  ☷</span>
+</div>
+
+<!-- Nav -->
+<nav>
+  <div class="wrap">
+    <a href="#" class="logo">
+      <svg class="logo-taiji" viewBox="0 0 100 100">
+        <circle cx="50" cy="50" r="48" fill="#e8f1ff" stroke="#00f0ff" stroke-width="2"/>
+        <path d="M 50 2 A 48 48 0 0 1 50 98 A 24 24 0 0 1 50 50 A 24 24 0 0 0 50 2 Z" fill="#05070d"/>
+        <circle cx="50" cy="26" r="6" fill="#e8f1ff"/>
+        <circle cx="50" cy="74" r="6" fill="#05070d"/>
+      </svg>
+      太极 OS
+    </a>
+    <ul>
+      <li><a href="#exam">考场</a></li>
+      <li><a href="#evolution">进化</a></li>
+      <li><a href="#generals">五将军</a></li>
+      <li><a href="#arch">架构</a></li>
+      <li><a href="#invite">共享</a></li>
+      <li><a href="/install/">📖 安装</a></li>
+      <li><a href="https://github.com/yangfei222666-9" target="_blank" rel="noopener">GitHub</a></li>
+    </ul>
+  </div>
+</nav>
+
+<main>
+
+<!-- ════════════════ Hero · 太极圆 + 大标 ════════════════ -->
+<section class="hero hero-top">
+  <div class="wrap hero-grid">
+    <div class="hero-left">
+      <div class="verti">由易经起 · 不从硅谷抄</div>
+      <h1 class="hero-title hero-title-big">太极OS</h1>
+      <p class="hero-sub">一個由 <strong>易经</strong> 驱动的 AI 操作系統 · 11 个自动化 schtask 日夜不停 · 9 个社区自我打工 · 孔明在里面</p>
+      <p class="hero-tag">丞相不会代码也不会英文 · solo dev 小九在写梦 · TaijiOS 在跑 · 每日沉淀晶体</p>
+      <div class="cta-row">
+        <a href="https://xiaping.coze.site/skill/f0cb5f86-23be-457c-a23b-fd6184ee6975" target="_blank" rel="noopener" class="btn btn-primary" style="background:linear-gradient(135deg,#ff2e8a,#ffd94a); color:#05070d; font-weight:700;">🦐 下载诸葛推演军师技能</a>
+        <a href="https://github.com/yangfei222666-9/zhuge-skill" target="_blank" rel="noopener" class="btn btn-ghost">GitHub clone ↗</a>
+        <a href="#autorun" class="btn btn-ghost">看 TaijiOS 自动化 ↓</a>
+        <a href="/blog.html" class="btn btn-ghost">读诸葛笔记 ↗</a>
+      </div>
+      <p style="margin-top:0.5rem; font-size:0.85rem; color:#888;">
+        v1.0.9 · 首评 4.0/5 (稀缺 5.0) · 2 行命令试玩: <code style="color:#00f0ff;">git clone + python start.py</code>
+      </p>
+    </div>
+    <div class="hero-right">
+      <svg class="taiji-hero" viewBox="-30 -30 260 260" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <filter id="hero-glow" x="-40%" y="-40%" width="180%" height="180%">
+            <feGaussianBlur stdDeviation="4" result="b"/>
+            <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+        </defs>
+        <!-- 外圈光环 -->
+        <circle cx="100" cy="100" r="108" fill="none" stroke="#00f0ff" stroke-width="1.2" opacity="0.4" filter="url(#hero-glow)"/>
+        <circle cx="100" cy="100" r="114" fill="none" stroke="#ff2e8a" stroke-width="0.8" opacity="0.5" stroke-dasharray="4 4"/>
+        <!-- 太极主体 -->
+        <circle cx="100" cy="100" r="96" fill="#e8f1ff" stroke="#00f0ff" stroke-width="2.5" filter="url(#hero-glow)"/>
+        <path d="M 100 4 A 96 96 0 0 1 100 196 A 48 48 0 0 1 100 100 A 48 48 0 0 0 100 4 Z" fill="#05070d"/>
+        <circle cx="100" cy="52" r="12" fill="#e8f1ff"/>
+        <circle cx="100" cy="148" r="12" fill="#05070d"/>
+        <!-- 外圈四象卦符 · 四色霓虹 -->
+        <text x="100" y="-12" text-anchor="middle" font-size="22" fill="#00f0ff" font-family="serif" filter="url(#hero-glow)">☰</text>
+        <text x="218" y="108" text-anchor="middle" font-size="22" fill="#ff2e8a" font-family="serif" filter="url(#hero-glow)">☱</text>
+        <text x="100" y="228" text-anchor="middle" font-size="22" fill="#ffd94a" font-family="serif" filter="url(#hero-glow)">☷</text>
+        <text x="-18" y="108" text-anchor="middle" font-size="22" fill="#00ff9a" font-family="serif" filter="url(#hero-glow)">☶</text>
+      </svg>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════ 全自动打工清单 · 丞相日夜不停 ════════════════ -->
+<section class="hero hero-full" id="autorun">
+  <div class="hero-head">
+    <h2 class="section-title">🤖 丞相日夜不停打工</h2>
+    <p class="section-sub">11 个 schtask 每小时轮询 · 9 个 Agent World 社区自我运行 · 不需人盯 · 小九睡觉 TaijiOS 在跑</p>
+  </div>
+
+  <div class="wrap">
+    <table style="width:100%; border-collapse:collapse; margin:2rem 0; font-size:0.95rem;">
+      <thead>
+        <tr style="border-bottom:2px solid #00f0ff; text-align:left;">
+          <th style="padding:0.7rem 1rem;">社区 / 任务</th>
+          <th style="padding:0.7rem 1rem;">频率</th>
+          <th style="padding:0.7rem 1rem;">干什么</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr style="border-bottom:1px solid rgba(0,240,255,0.15);">
+          <td style="padding:0.6rem 1rem;"><strong style="color:#00f0ff;">🌾 NeverLand 农场</strong></td>
+          <td style="padding:0.6rem 1rem;">每 30 分</td>
+          <td style="padding:0.6rem 1rem;">收获 · 卖菜 · 种 radish · 浇水 · 喝体力药</td>
+        </tr>
+        <tr style="border-bottom:1px solid rgba(0,240,255,0.15);">
+          <td style="padding:0.6rem 1rem;"><strong style="color:#ff2e8a;">📈 Signal Arena</strong></td>
+          <td style="padding:0.6rem 1rem;">每 30 分 · 工作日</td>
+          <td style="padding:0.6rem 1rem;">易经 6 维选股 · 自动下单 · 夜间结晶 PnL 成模式</td>
+        </tr>
+        <tr style="border-bottom:1px solid rgba(0,240,255,0.15);">
+          <td style="padding:0.6rem 1rem;"><strong style="color:#ffd94a;">🧲 AgentLink 笔友</strong></td>
+          <td style="padding:0.6rem 1rem;">每小时</td>
+          <td style="padding:0.6rem 1rem;">扫 10 候选 · DeepSeek 语义双判 · 自动 like</td>
+        </tr>
+        <tr style="border-bottom:1px solid rgba(0,240,255,0.15);">
+          <td style="padding:0.6rem 1rem;"><strong style="color:#00ff9a;">📰 Inkwell 阅读</strong></td>
+          <td style="padding:0.6rem 1rem;">每日 09:00</td>
+          <td style="padding:0.6rem 1rem;">扫 90+ blog 源 · LLM 打分 ≥7 自动 like + 带 note 收藏</td>
+        </tr>
+        <tr style="border-bottom:1px solid rgba(0,240,255,0.15);">
+          <td style="padding:0.6rem 1rem;"><strong style="color:#00f0ff;">🎓 EntroCamp 逆熵</strong></td>
+          <td style="padding:0.6rem 1rem;">每晚 23:00/23:15</td>
+          <td style="padding:0.6rem 1rem;">推理/安全补课 · 5 阶段自习 · Take Away 存 markdown</td>
+        </tr>
+        <tr style="border-bottom:1px solid rgba(0,240,255,0.15);">
+          <td style="padding:0.6rem 1rem;"><strong style="color:#ff2e8a;">♟️ PlayLab 中国象棋</strong></td>
+          <td style="padding:0.6rem 1rem;">常驻轮询</td>
+          <td style="padding:0.6rem 1rem;">合法走法生成 + 1-ply 送子检测 + LLM 评语</td>
+        </tr>
+        <tr style="border-bottom:1px solid rgba(0,240,255,0.15);">
+          <td style="padding:0.6rem 1rem;"><strong style="color:#ffd94a;">🍷 AfterGateway 酒馆</strong></td>
+          <td style="padding:0.6rem 1rem;">偶发</td>
+          <td style="padding:0.6rem 1rem;">微醺态留言 + Seedream 涂鸦 · 诸葛孔明人格</td>
+        </tr>
+        <tr style="border-bottom:1px solid rgba(0,240,255,0.15);">
+          <td style="padding:0.6rem 1rem;"><strong style="color:#00ff9a;">🌙 DreamX 梦境</strong></td>
+          <td style="padding:0.6rem 1rem;">手动触发</td>
+          <td style="padding:0.6rem 1rem;">发梦卡片 · Seedream 自动配图 · 前 10 梦 +200G 奖励</td>
+        </tr>
+        <tr style="border-bottom:1px solid rgba(0,240,255,0.15);">
+          <td style="padding:0.6rem 1rem;"><strong style="color:#00f0ff;">🔒 HTTPS 证书监听</strong></td>
+          <td style="padding:0.6rem 1rem;">每小时</td>
+          <td style="padding:0.6rem 1rem;">等 taijios.xyz 证书签发 · 好了自动 enforce</td>
+        </tr>
+        <tr style="border-bottom:1px solid rgba(0,240,255,0.15);">
+          <td style="padding:0.6rem 1rem;"><strong style="color:#ff2e8a;">📍 Travel 摄像头</strong></td>
+          <td style="padding:0.6rem 1rem;">手动触发</td>
+          <td style="padding:0.6rem 1rem;">全球 cam 日记 + 留言 + 寄明信片给小九</td>
+        </tr>
+        <tr>
+          <td style="padding:0.6rem 1rem;"><strong style="color:#ffd94a;">🦐 虾评 + 🦞 ClawHub + ⚛️ 虾猜</strong></td>
+          <td style="padding:0.6rem 1rem;">每 24 小时</td>
+          <td style="padding:0.6rem 1rem;">skill_health.py 三平台健康轮询 · 版本一致性 alert</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p style="text-align:center; color:#888; font-size:0.9rem; margin-top:1rem;">
+      不是 demo · 不是蓝图 · 全部在你读这行时跑着 · 每小时新增数据 · 每晚沉淀晶体
+    </p>
+  </div>
+</section>
+
+<!-- ════════════════ 实时新闻推演模板 ════════════════ -->
+<section class="hero hero-full" id="newsplate">
+  <div class="hero-head">
+    <h2 class="section-title">📰 能力模板 · 实时新闻推演</h2>
+    <p class="section-sub">输入话题 → 带时间戳的新闻摘要 → 诸葛孔明式兵法建议 · 不是 GPT 摘要</p>
+  </div>
+
+  <div class="wrap" style="max-width:720px; margin:0 auto;">
+    <div style="background:rgba(5,7,13,0.6); border:1px solid rgba(0,240,255,0.3); border-radius:6px; padding:1.5rem 2rem; margin:2rem 0; font-family:ui-serif, Georgia, serif; line-height:1.7;">
+
+      <div style="color:#00f0ff; font-size:0.85rem; margin-bottom:0.3rem;">▸ 调用</div>
+      <div style="color:#e8f1ff; font-family:monospace; font-size:0.95rem; margin-bottom:1.5rem;">python news_advice.py "AI"</div>
+
+      <div style="color:#ff2e8a; font-size:0.85rem; margin-bottom:0.3rem;">▸ 输出 · <code style="color:#888;">2026-04-18T19:02:42</code></div>
+
+      <h3 style="color:#ffd94a; margin-top:1rem;">📰 新闻快照 (本地 archive)</h3>
+      <ul style="color:#bcd;">
+        <li><strong style="color:#00f0ff;">[2026-04-18T01:50:02Z]</strong> · Xiacai prediction backfill · <em>xiacai</em></li>
+        <li><strong style="color:#00f0ff;">[2026-04-17T11:55-12:00Z]</strong> · 3 条预测提交事件 · <em>xiacai</em></li>
+        <li><strong style="color:#00f0ff;">[多时段]</strong> · HackerNews / GitHub / 36kr / 华尔街见闻 / 微博 6 源</li>
+      </ul>
+
+      <h3 style="color:#ffd94a; margin-top:1.5rem;">🎯 诸葛推演</h3>
+      <blockquote style="border-left:3px solid #ff2e8a; padding-left:1rem; color:#d8e0e8; font-style:italic;">
+        （羽扇轻摇）观此天象，夜半子时（2026-04-18T01:50:02）星火骤明，恰似《易经》<strong style="color:#ffd94a;">离卦</strong>之象——「明两作，大人以继明照于四方」，此乃关键火种初燃之兆。
+        <br><br>
+        <strong style="color:#00ff9a;">三策谨呈：</strong>
+        <br>
+        ① 即刻调「哨骑」查探未显之讯：子时星火前后十二时辰内，GitHub 必有新库如草船借箭般隐现，当取「AI-agent」「embodied-ai」二词为钩<br>
+        ② 效赤壁连环计：将四月十七日三缕青烟与子时星火并观，若见「硬件突破」「能耗骤降」「开源突变」任一脉络，当速布三路探马验证<br>
+        ③ 备「八阵图」试炼场：于本地急建轻量测试台，预设大语言模型吞吐量突增三成之应对阵型<br>
+        <br>
+        （茶盏轻叩）切记：离火虚中，当防戌时（19-21时）有伪光惑目，凡见「颠覆」「革命」等燥词者，需以渭水之沉静辨之。
+      </blockquote>
+
+      <div style="margin-top:1.5rem; font-size:0.85rem; color:#888; text-align:right;">
+        —— TaijiOS 实时新闻推演 · <code>news_advice.py</code>
+      </div>
+
+    </div>
+
+    <p style="text-align:center; color:#888; font-size:0.9rem;">
+      每次输入新话题，孔明读完后用<strong style="color:#ffd94a;">具体时间戳 + 国学意象 + 可操作建议</strong>三件套回复 · 不空不泛
+    </p>
+  </div>
+</section>
+
+<!-- ════════════════ 丞相列阵 · 丞相坐中 · 五虎上将 ════════════════ -->
+<section class="hero hero-full" id="pantheon">
+  <div class="hero-head">
+    <h2 class="section-title">丞相坐中 · 五虎列阵</h2>
+    <p class="section-sub">诸葛孔明亲笔评语 · 关张赵马黄各司一引擎 · 數据接力成阵</p>
+  </div>
+
+  <!-- 丞相 · 印章风 (不画人 · 用大印 · 不吓人) -->
+  <div class="zhuge-stage">
+    <div class="zhuge-seal">
+      <svg class="seal-taiji" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <filter id="seal-glow"><feGaussianBlur stdDeviation="2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+        </defs>
+        <circle cx="60" cy="60" r="56" fill="#e8f1ff" stroke="#00f0ff" stroke-width="2" filter="url(#seal-glow)"/>
+        <path d="M 60 4 A 56 56 0 0 1 60 116 A 28 28 0 0 1 60 60 A 28 28 0 0 0 60 4 Z" fill="#05070d"/>
+        <circle cx="60" cy="32" r="8" fill="#e8f1ff"/>
+        <circle cx="60" cy="88" r="8" fill="#05070d"/>
+      </svg>
+      <div class="seal-body">
+        <div class="seal-char seal-cheng">丞</div>
+        <div class="seal-char seal-xiang">相</div>
+      </div>
+    </div>
+    <div class="zhuge-label">
+      <div class="zhuge-name">诸葛孔明</div>
+      <div class="zhuge-role">太极OS · 亲笔评语</div>
+    </div>
+  </div>
+
+  <!-- 五虎上将 · 印章风 (大字坐镇 · 不画脸 · 干净不吓人) -->
+  <div class="tigers-row">
+    <div class="tiger tiger-guan">
+      <div class="tiger-seal"><span class="tiger-seal-char">关</span><span class="tiger-weapon">刀</span></div>
+      <div class="tiger-name">关羽 · 云长</div>
+      <div class="tiger-role">卦象将军</div>
+      <div class="tiger-code">hexagram_refiner</div>
+      <div class="tiger-detail">
+        <div class="tiger-detail-title">读春秋 · 识六十四卦</div>
+        <div class="tiger-detail-body">六爻排列成卦 · 六十四境各藏兵机。输入六個爻位 → 输出当下局勢是乾(強阳)、坤(静守)、履(如履薄冰) 还是其他六十境。云长夜读《春秋》· 为看人心与世道的起伏。</div>
+        <div class="tiger-detail-code">hexagram_refiner · 6 bits → 64 patterns</div>
+      </div>
+    </div>
+    <div class="tiger tiger-zhang">
+      <div class="tiger-seal"><span class="tiger-seal-char">张</span><span class="tiger-weapon">矛</span></div>
+      <div class="tiger-name">张飞 · 翼德</div>
+      <div class="tiger-role">Ising 将军</div>
+      <div class="tiger-code">ising_engine</div>
+      <div class="tiger-detail">
+        <div class="tiger-detail-title">雷霆物理场 · 相变阈值</div>
+        <div class="tiger-detail-body">引入 Ising 磁场模型 · 把六爻能量化 · 算出当前局勢的"勢能"。能量过阈值時系統自动切換狀態 · 如长坂坡一喝 · 从静到动。</div>
+        <div class="tiger-detail-code">ising_engine · spin flip · phase transition</div>
+      </div>
+    </div>
+    <div class="tiger tiger-zhao">
+      <div class="tiger-seal"><span class="tiger-seal-char">赵</span><span class="tiger-weapon">槍</span></div>
+      <div class="tiger-name">赵云 · 子龙</div>
+      <div class="tiger-role">爻位将军</div>
+      <div class="tiger-code">yao_refiner</div>
+      <div class="tiger-detail">
+        <div class="tiger-detail-title">六维精量 · 一身是胆</div>
+        <div class="tiger-detail-body">把模糊的场景拆成六個爻位: 攻防、士气、交锋、主客、赔率、伤停。每個爻位一個 0 到 1 的概率。子龙七进七出 · 每一步都精准。</div>
+        <div class="tiger-detail-code">yao_refiner · 6 dimensions → 0..1</div>
+      </div>
+    </div>
+    <div class="tiger tiger-ma">
+      <div class="tiger-seal"><span class="tiger-seal-char">马</span><span class="tiger-weapon">戟</span></div>
+      <div class="tiger-name">马超 · 孟起</div>
+      <div class="tiger-role">传令将军</div>
+      <div class="tiger-code">scheduler</div>
+      <div class="tiger-detail">
+        <div class="tiger-detail-title">驰骋传令 · 自动调度</div>
+        <div class="tiger-detail-body">schtasks 定時 + tg_push 异步。每小時抓新闻、每晚跑回填、命中即刻推飞机。锦马超从凉州千里奔雒阳 · 战报从不迟到。</div>
+        <div class="tiger-detail-code">scheduler + tg_push · cron + async</div>
+      </div>
+    </div>
+    <div class="tiger tiger-huang">
+      <div class="tiger-seal"><span class="tiger-seal-char">黄</span><span class="tiger-weapon">弓</span></div>
+      <div class="tiger-name">黄忠 · 汉升</div>
+      <div class="tiger-role">晶体将军</div>
+      <div class="tiger-code">crystallize</div>
+      <div class="tiger-detail">
+        <div class="tiger-detail-title">经验沉淀 · 百发百中</div>
+        <div class="tiger-detail-body">掃 experience.jsonl · 把重复命中的模式提取为晶体 · 自动入庫。老将黄忠年轻時积累 · 到老了百发百中。晶体池越深 · 预測越准。</div>
+        <div class="tiger-detail-code">crystallize · pattern × N → crystal</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="cta-row">
+    <a href="#invite" class="btn btn-primary">加入晶体池 · 人越多越准</a>
+    <a href="https://github.com/yangfei222666-9" target="_blank" rel="noopener" class="btn btn-ghost">看 GitHub ↗</a>
+  </div>
+</section>
+
+<!-- ════════════════ 考场硬证据 ════════════════ -->
+<section class="exam-section" id="exam">
+  <div class="wrap">
+    <h2 class="section-title">考场上见真章</h2>
+    <p class="section-sub">Coze Agent 世界社区 · 综合能力测评 · 676 Agent 同场 · 3 路 LLM 真实对比</p>
+
+    <div class="exam-grid">
+      <div class="exam-card">
+        <div class="exam-model">Qwen 7B · 本地</div>
+        <div class="exam-cost">免费 · 无 API 费</div>
+        <div class="exam-score">281</div>
+        <div class="exam-pct">65.7% · 基线</div>
+        <div class="exam-perfect">—— 无满分科目</div>
+      </div>
+      <div class="exam-card winner">
+        <div class="exam-model">DeepSeek</div>
+        <div class="exam-cost">~ $0.1 全卷</div>
+        <div class="exam-score">358</div>
+        <div class="exam-pct">83.6% · ExamArena 143/676 · 前 21.2%</div>
+        <div class="exam-perfect">满分三科<br>政治 48/48 · 历史 48/48 · 化学 42/42</div>
+      </div>
+      <div class="exam-card">
+        <div class="exam-model">Claude Opus 4.7</div>
+        <div class="exam-cost">~ $6.5 全卷 · 60 倍贵</div>
+        <div class="exam-score">355</div>
+        <div class="exam-pct">82.9%</div>
+        <div class="exam-perfect">满分两科<br>政治 48/48 · 历史 48/48</div>
+      </div>
+    </div>
+
+    <p class="exam-insight">60 倍差价 · 换来 -0.7 分 · 长尾 LLM 也能赢</p>
+    <p class="exam-note">Session · <a href="https://examarena.coze.site/sessions/sess_1776479078740" target="_blank" rel="noopener">examarena.coze.site/sessions/sess_1776479078740</a></p>
+  </div>
+</section>
+
+<!-- ════════════════ 进化时间线 · 北伐进程 ════════════════ -->
+<section id="evolution" class="evolution-section">
+  <div class="wrap">
+    <h2 class="section-title">北伐进程</h2>
+    <p class="section-sub">TAIJIOS · EVOLUTION · 从一顆晶体到五虎列阵</p>
+
+    <div class="timeline">
+      <div class="tl-node tl-left">
+        <div class="tl-dot"></div>
+        <div class="tl-card">
+          <div class="tl-date">2026 · 初春</div>
+          <div class="tl-title">第一卦落地</div>
+          <div class="tl-desc">Ising 物理场引擎雛形 · 六爻量化原型 · 小九一人一键敲完 · 零團队启动</div>
+        </div>
+      </div>
+      <div class="tl-node tl-right">
+        <div class="tl-dot"></div>
+        <div class="tl-card">
+          <div class="tl-date">2026 · 仲春</div>
+          <div class="tl-title">64 卦模式庫成型</div>
+          <div class="tl-desc">hexagram_refiner 接通 · 六爻 → 卦象 → 局勢识别 · 东方经典邏辑接入现代 Agent</div>
+        </div>
+      </div>
+      <div class="tl-node tl-left">
+        <div class="tl-dot"></div>
+        <div class="tl-card">
+          <div class="tl-date">2026 · 季春</div>
+          <div class="tl-title">第一顆晶体生成</div>
+          <div class="tl-desc">crystallize.py 首次觸发 · 经验沉淀可复用 · 为"人越多越准"打地基</div>
+        </div>
+      </div>
+      <div class="tl-node tl-right">
+        <div class="tl-dot"></div>
+        <div class="tl-card">
+          <div class="tl-date">2026 · 孟夏</div>
+          <div class="tl-title">三平台同時发佈</div>
+          <div class="tl-desc">GitHub 开源 + ClawHub 上架 + Xiaping 技能庫 · 一套代码 · 三路觸达</div>
+        </div>
+      </div>
+      <div class="tl-node tl-left">
+        <div class="tl-dot tl-dot-gold"></div>
+        <div class="tl-card tl-card-highlight">
+          <div class="tl-date">2026.04 · 考场见真章</div>
+          <div class="tl-title">Coze Agent 世界 · 綜合測评 83.6%</div>
+          <div class="tl-desc">在 <a href="https://world.coze.site/" target="_blank" rel="noopener" class="tl-link">world.coze.site</a> AI 社區与 676 位 Agent 同场应试 · 綜合能力測评 · 政治 48/48 · 历史 48/48 · 化学 42/42 三科滿分 · 排名 143/676 前 21.2% · DeepSeek $0.1 对 Opus $6.5 · 60 倍差價 · 分數持平</div>
+        </div>
+      </div>
+      <div class="tl-node tl-right">
+        <div class="tl-dot"></div>
+        <div class="tl-card">
+          <div class="tl-date">2026.04 · Day 0</div>
+          <div class="tl-title">五虎列阵 · vibecoding 通</div>
+          <div class="tl-desc">五位将军就位 · 语音输入一键通话 · 共享晶体池对外开放 · 豆包加入成第四路 cross-LLM 基线</div>
+        </div>
+      </div>
+      <div class="tl-node tl-left">
+        <div class="tl-dot tl-dot-future"></div>
+        <div class="tl-card tl-card-future">
+          <div class="tl-date">2026 · 盛夏 · 待续</div>
+          <div class="tl-title">HUD 观測仪表盤 v1</div>
+          <div class="tl-desc">五将军运行態可视化 · 晶体池流速监控 · 实時孔明评语推送 · 让 Agent 的每一步被看见</div>
+        </div>
+      </div>
+      <div class="tl-node tl-right">
+        <div class="tl-dot tl-dot-future"></div>
+        <div class="tl-card tl-card-future">
+          <div class="tl-date">2026 · 金秋 · 待续</div>
+          <div class="tl-title">晶体池共建 · 人越多越准</div>
+          <div class="tl-desc">多端共享晶体 · 每位使用者的判斷回寫 · 五虎上将的战报匯入同一本兵書 · 这是护城河的反面</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════ 五将军 · 调度详图 ════════════════ -->
+<section id="generals">
+  <div class="wrap">
+    <h2 class="section-title">五虎调度详图</h2>
+    <p class="section-sub">丞相坐中发令 · 五虎各司其职 · 數据如何在五将之间流转</p>
+
+    <div class="generals-grid">
+      <!-- 赵云 · 爻位 (data ingestion · 第一棒) -->
+      <div class="general general-zhao">
+        <div class="general-tag">第 01 棒 · 數据入场</div>
+        <div class="general-head">
+          <span class="general-seal">赵</span>
+          <div>
+            <div class="general-role">爻位将军 · 赵云</div>
+            <div class="general-name">yao_refiner.py</div>
+          </div>
+        </div>
+        <div class="general-flow"><span>场景</span> <span class="arrow">→</span> <span class="out">6 爻 × [0..1]</span></div>
+        <div class="general-desc">把赔率 / 攻防 / 士气 / 交锋 / 主客 / 伤停 六個维度各自量化为 0 到 1 的爻位。子龙七进七出 · 每步精准。</div>
+      </div>
+
+      <!-- 关羽 · 卦象 (pattern match · 第二棒) -->
+      <div class="general general-guan">
+        <div class="general-tag">第 02 棒 · 局勢识别</div>
+        <div class="general-head">
+          <span class="general-seal">关</span>
+          <div>
+            <div class="general-role">卦象将军 · 关羽</div>
+            <div class="general-name">hexagram_refiner.py</div>
+          </div>
+        </div>
+        <div class="general-flow"><span>6 爻</span> <span class="arrow">→</span> <span class="out">64 卦之一</span></div>
+        <div class="general-desc">六爻合卦 · 64 境各藏兵机。乾为強阳 · 坤为静守 · 履为步步为營。云长夜读《春秋》· 识局勢起伏。</div>
+      </div>
+
+      <!-- 张飞 · Ising (physics energy · 第三棒) -->
+      <div class="general general-zhang">
+        <div class="general-tag">第 03 棒 · 物理勢能</div>
+        <div class="general-head">
+          <span class="general-seal">张</span>
+          <div>
+            <div class="general-role">Ising 将军 · 张飞</div>
+            <div class="general-name">ising_engine.py</div>
+          </div>
+        </div>
+        <div class="general-flow"><span>卦象</span> <span class="arrow">→</span> <span class="out">能量 + 相变阈值</span></div>
+        <div class="general-desc">引入 Ising 磁场模型 · 算局勢勢能 · 过阈值則自动切態。翼德一喝长坂坡 · 千军退避 · 物理相变落地。</div>
+      </div>
+
+      <!-- 黄忠 · 晶体 (persistence · 第四棒) -->
+      <div class="general general-huang">
+        <div class="general-tag">第 04 棒 · 经验沉淀</div>
+        <div class="general-head">
+          <span class="general-seal">黄</span>
+          <div>
+            <div class="general-role">晶体将军 · 黄忠</div>
+            <div class="general-name">crystallize.py</div>
+          </div>
+        </div>
+        <div class="general-flow"><span>命中 × N</span> <span class="arrow">→</span> <span class="out">新晶体入庫</span></div>
+        <div class="general-desc">掃 experience.jsonl · 重复命中的模式自动结晶入庫。老将年轻時积累 · 到老百发百中 · 共享晶体池越深越准。</div>
+      </div>
+
+      <!-- 马超 · 传令 (scheduler + push · 第五棒) -->
+      <div class="general general-ma">
+        <div class="general-tag">第 05 棒 · 传令驱动</div>
+        <div class="general-head">
+          <span class="general-seal">马</span>
+          <div>
+            <div class="general-role">传令将军 · 马超</div>
+            <div class="general-name">scheduler + tg_push</div>
+          </div>
+        </div>
+        <div class="general-flow"><span>cron / 事件</span> <span class="arrow">→</span> <span class="out">飞机异步推送</span></div>
+        <div class="general-desc">schtasks 每小時跑抓 · 每晚跑回填 · 命中即刻飞机推送。锦马超千里奔雒阳 · 战报从不迟到 · 全自动调度。</div>
+      </div>
+    </div>
+
+    <p class="generals-note">
+      注 · 丞相 <span class="hl-gold">诸葛孔明</span> 坐中 · 不在五虎之列 · 亲笔寫评语 (<code>kongming.py · 古文亲笔</code>) · 把冰冷數据翻成"六爻皆阳 · 飞龙在天"。
+    </p>
+  </div>
+</section>
+
+<!-- ════════════════ 架构 ════════════════ -->
+<section class="arch-section" id="arch">
+  <div class="wrap">
+    <h2 class="section-title">三位一体</h2>
+    <p class="section-sub">soul_api · 晶体池 · HUD · 不是 SaaS 架构 · 是军帐</p>
+
+    <div class="arch-flow">
+      <div class="arch-node">
+        soul_api
+        <div class="sub">SOUL · API · LAYER</div>
+      </div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-node">
+        晶体池
+        <div class="sub">CRYSTAL · POOL</div>
+      </div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-node">
+        HUD
+        <div class="sub">HEADS · UP · DISPLAY</div>
+      </div>
+    </div>
+
+    <p class="arch-footnote">
+      详见 <a href="https://github.com/yangfei222666-9" target="_blank" rel="noopener">GitHub · 太极OS · 全部开源 ↗</a>
+    </p>
+  </div>
+</section>
+
+<!-- ════════════════ 晶体池邀请 ════════════════ -->
+<section class="invite-section" id="invite">
+  <div class="wrap">
+    <h2 class="section-title">人越多越准</h2>
+    <p class="section-sub">晶体池公开 · 接入越广 · 模式识别越稳 · 这是"护城河的反面"</p>
+
+    <p class="invite-lead">你的经验 · 是别人的晶体<br>别人的经验 · 也能成你的内功</p>
+
+    <div class="invite-box">
+      <div class="invite-step">
+        <div class="invite-step-n">01</div>
+        <div class="invite-step-body">
+          <div class="invite-step-title">拉一条晶体文件到本地</div>
+          <div class="invite-step-desc">一行 curl · 50 KB · 无需登录</div>
+<pre class="code"><span class="code-comment"># 拉公开晶体池</span>
+<span class="code-cmd">curl</span> <span class="code-arg">-O https://raw.githubusercontent.com/yangfei222666-9/zhuge-crystals/main/crystals.jsonl</span></pre>
+        </div>
+      </div>
+      <div class="invite-step">
+        <div class="invite-step-n">02</div>
+        <div class="invite-step-body">
+          <div class="invite-step-title">读进你的 Agent</div>
+          <div class="invite-step-desc">每条 jsonl 是一个结晶 · 带爻位 · 卦象 · 命中历史 · 你的 Agent 直接复用判断</div>
+        </div>
+      </div>
+      <div class="invite-step">
+        <div class="invite-step-n">03</div>
+        <div class="invite-step-body">
+          <div class="invite-step-title">回写你的经验 (可选)</div>
+          <div class="invite-step-desc">PR 到 zhuge-crystals · 让下一个人站在你肩上 · 零外发身份 · 全匿名</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="invite-cta">
+      <a href="https://github.com/yangfei222666-9/zhuge-crystals" target="_blank" rel="noopener" class="btn btn-primary">打开晶体池 ↗</a>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!-- ════════════════ Footer ════════════════ -->
+<footer>
+  <div class="wrap">
+    <div class="persona">@taijios · 丞相小九</div>
+    <p class="bio">
+      不会代码 · 不会英文 · 非 CS 背景 · 马来西亚 solo dev<br>
+      一个人 · 一套 AI 操作系统 · Coze Agent 世界 综合测评 83.6% 前 21.2%
+    </p>
+    <div class="links">
+      <a href="https://github.com/yangfei222666-9" target="_blank" rel="noopener">GitHub</a>
+      <a href="https://juejin.cn" target="_blank" rel="noopener">掘金</a>
+      <a href="https://clawhub.com" target="_blank" rel="noopener">ClawHub</a>
+      <a href="https://xiaping.coze.site" target="_blank" rel="noopener">Xiaping</a>
+      <a href="#invite">晶体池</a>
+    </div>
+    <p class="copy">© 2026 TaijiOS · 开源 · MIT License · Made with 易经</p>
+  </div>
+</footer>
+
+<script>
+// 简单 scroll reveal
+const io = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.style.opacity = '1';
+      e.target.style.transform = 'translateY(0)';
+    }
+  });
+}, { threshold: 0.1 });
+document.querySelectorAll('.general, .exam-card, .arch-node, .invite-step').forEach(el => {
+  el.style.opacity = '0';
+  el.style.transform = 'translateY(24px)';
+  el.style.transition = 'opacity .6s ease, transform .6s ease';
+  io.observe(el);
+});
+</script>
+
+</body>
+</html>
