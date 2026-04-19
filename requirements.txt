@@ -1,17 +1,23 @@
-# TaijiOS bundle · core runtime deps (v1.1.3)
+# TaijiOS bundle · runtime deps (v1.1.4)
+#
+# 设计哲学: TaijiOS 自家代码全 0-pip-dep (urllib + stdlib only · 见 aios/voice/whisper_stt.py
+# / aios/crawl/firecrawl_adapter.py / aios/observability/langfuse_client.py).
+# 但 api_server.py 走 FastAPI · sentinel/predict 走 requests · 这些是不可避免的
+# transitive 依赖 · 仍按"最小化"原则分三档:
 
-# 必装 (核心)
+# ─── 档 1 · CORE 必装 (核心 CLI + heartbeat) ───
 requests>=2.28
 python-dotenv>=1.0
 
-# API Server (api_server.py)
+# ─── 档 2 · API SERVER (跑 api_server.py 时才要) ───
+# 不跑 8787 server 可全注释掉
 fastapi>=0.100
 uvicorn[standard]>=0.20
 pydantic>=2.0
 
-# === 以下为可选 · 按需装 ===
-# openai>=1.0            # TaijiOS-Lite / zhuge-skill/core/llm.py 走 OpenAI SDK 时
-# anthropic>=0.40        # vision.py 原生 SDK (当前走 urllib 不强依赖)
+# ─── 档 3 · 可选 (按功能各自 try-import · 不强装) ───
+# openai>=1.0            # TaijiOS-Lite / zhuge-skill/core/llm.py 走 openai SDK 时 (我们的 adapter 不用)
+# anthropic>=0.40        # vision.py 想用原生 SDK (当前走 urllib 不强依赖)
 # edge-tts>=6.0          # aios/voice 备选 TTS
 # mcp>=1.0.0             # MCP server 集成
 # python-docx>=0.8       # TaijiOS-Lite Office 文档

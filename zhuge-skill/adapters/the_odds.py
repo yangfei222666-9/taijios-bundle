@@ -1,5 +1,6 @@
 """The Odds API 适配器 — 49 家博彩交叉验证"""
 import os
+import sys
 from typing import Dict, Optional
 
 BASE = "https://api.the-odds-api.com/v4"
@@ -32,8 +33,7 @@ def cross_validate(home: str, away: str, league: str = "serie-a",
         if not r.ok:
             return None
     except Exception as e:
-        import sys as _sys
-        print(f"[the_odds] {type(e).__name__}: {e}", file=_sys.stderr)
+        print(f"[the_odds] {type(e).__name__}: {e}", file=sys.stderr)
         return None
 
     for m in r.json():

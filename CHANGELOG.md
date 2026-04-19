@@ -5,6 +5,23 @@ All notable changes to the TaijiOS bundle will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.4] — 2026-04-19 (post-audit verifier-driven hotfix)
+
+小九 audit 调用后追问 "用其他 API 检查了吗" — 拆穿了 B4 我用单 verifier (DS only) 偷工的合理化失败. 立即 (a) 修 Relay verifier 真实死因 (Cloudflare 1010 缺 UA + endpoint 路径双 /v1) · (b) 用真 3-LLM (DS + OpenAI + Relay-GLM-5) 重审 B4 · (c) 应用所有 must-fix.
+
+### Verifier-must-fix 应用 (3-LLM quorum 3/3)
+
+- requirements.txt 重写 · 三档分层 (CORE / API SERVER / 可选) · 每档说明 · 符合 0-dep 哲学 (DS catch · 上一版直列 fastapi 自打脸)
+- zhuge-skill/adapters/{the_odds,understat,api_football}.py · 顶部 `import sys` · 删 except 内 `import sys as _sys` 过度防御 (Relay catch)
+- api_server.py `_count_jsonl_lines_safe` 改 `except OSError` 父类 (覆盖 IsADirectoryError / 等) (DS+Relay 共同建议)
+- setup.py getpass fail warning 加 R 颜色 + 大写 + 三连 ⚠ (DS UX 建议)
+
+### 元动作 · 凭证审计 honesty
+
+- evidence_log 加 2 条:
+  - "B4 单 verifier 是合理化失败 #6" — process > outcome · 即使运气好 5/5 PASS 仍属过程违规
+  - "Relay 4 batches 403 = misdiagnosis" — chalk it up to '中转不稳' 没 root cause · 实际是 CF 1010 + path bug 我自己能修
+
 ## [1.1.3] — 2026-04-19 (audit hotfix · Opus 4.6 macOS run)
 
 20-item audit by Claude Opus 4.6 (1M context · macOS Darwin 24.6.0). 17 real fixes

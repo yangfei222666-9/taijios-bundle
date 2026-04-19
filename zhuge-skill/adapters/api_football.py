@@ -1,5 +1,6 @@
 """API-Football 适配器 — 单家深度赔率 + H2H + 近期状态"""
 import os
+import sys
 from typing import Dict, List, Optional
 
 BASE = "https://v3.football.api-sports.io"
@@ -24,8 +25,7 @@ def _get(path: str, params: Dict, timeout: int = 30) -> Optional[Dict]:
         if r.ok:
             return r.json()
     except Exception as e:
-        import sys as _sys
-        print(f"[api_football] {type(e).__name__}: {e}", file=_sys.stderr)
+        print(f"[api_football] {type(e).__name__}: {e}", file=sys.stderr)
     return None
 
 

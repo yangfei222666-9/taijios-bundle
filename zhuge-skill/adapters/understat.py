@@ -1,6 +1,7 @@
 """Understat xG 适配器 — 免费爬虫，无需 API key"""
 import json
 import re
+import sys
 from typing import Dict, List, Optional
 
 BASE = "https://understat.com"
@@ -50,6 +51,5 @@ def get_team_xg(team_name: str, league: str = "serie-a",
             "net_xg": round((total_xg - total_xga) / n, 2),
         }
     except Exception as e:
-        import sys as _sys
-        print(f"[understat] {type(e).__name__}: {e}", file=_sys.stderr)
+        print(f"[understat] {type(e).__name__}: {e}", file=sys.stderr)
         return None

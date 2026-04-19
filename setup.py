@@ -124,7 +124,7 @@ def configure_env(unattended: bool):
         except (EOFError, KeyboardInterrupt):
             ds_key = ""
         except Exception:
-            print(f"  {Y}⚠ getpass 不可用 · 以下输入将回显{X}")
+            print(f"  {R}⚠ ⚠ ⚠ WARNING · getpass UNAVAILABLE · 以下 KEY 输入将明文回显 ⚠ ⚠ ⚠{X}")
             ds_key = input(f"  输入 DEEPSEEK_API_KEY (sk-xxx): ").strip()
 
     if ds_key:

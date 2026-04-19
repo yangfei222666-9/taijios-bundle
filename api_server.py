@@ -278,10 +278,10 @@ def health():
 # ─────────────── Routes: v1 (auth-gated when TOKEN set) ───────────────
 
 def _count_jsonl_lines_safe(path) -> int:
-    """Race-safe line count · FileNotFoundError / PermissionError → 0 · 用于 /v1/status."""
+    """Race-safe line count · FileNotFoundError/PermissionError/OSError 父类 → 0 · 用于 /v1/status."""
     try:
         return sum(1 for line in path.read_text(encoding="utf-8", errors="replace").splitlines() if line.strip())
-    except (FileNotFoundError, PermissionError):
+    except OSError:  # 父类 · 覆盖 FileNotFoundError / PermissionError / IsADirectoryError 等
         return 0
 
 
