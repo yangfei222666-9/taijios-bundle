@@ -33,11 +33,17 @@ def _load_env():
 
 _load_env()
 
+_MISSING_KEY_WARNED = False
+
 
 def embed_text(text: str) -> list:
     """调 Doubao Embedding · 返回 4096 维向量. 无 key 返 []."""
+    global _MISSING_KEY_WARNED
     key = os.environ.get("ARK_API_KEY", "").strip()
     if not key:
+        if not _MISSING_KEY_WARNED:
+            print("[embed.py] ARK_API_KEY 未设置 · embedding disabled; returning []", file=sys.stderr)
+            _MISSING_KEY_WARNED = True
         return []
     model = os.environ.get("DOUBAO_EMB_MODEL", "doubao-embedding-large-text-240915")
     payload = {"model": model, "input": [text]}

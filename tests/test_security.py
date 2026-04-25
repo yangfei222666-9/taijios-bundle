@@ -14,6 +14,7 @@ import os
 import sys
 import re
 import pytest
+from types import SimpleNamespace
 from pathlib import Path
 from fastapi.testclient import TestClient
 
@@ -254,3 +255,79 @@ def test_gen_token_cli():
     out = r.stdout.strip()
     assert len(out) == 64, f"expected 64 char hex, got {len(out)}: {out!r}"
     int(out, 16)  # must parse as hex
+
+
+# ───────────── P1 follow-up hardening · bundle helpers ─────────────
+
+def test_windows_scheduler_batch_forces_utf8_and_log_dir(monkeypatch, tmp_path):
+    import install_scheduler
+
+    bat = tmp_path / "heartbeat.bat"
+    monkeypatch.setattr(install_scheduler, "BAT", bat)
+    monkeypatch.setattr(install_scheduler, "HEARTBEAT", tmp_path / "heartbeat.py")
+    monkeypatch.setattr(install_scheduler.subprocess, "run", lambda *a, **kw: SimpleNamespace(returncode=0, stdout="", stderr=""))
+
+    install_scheduler.windows_install("08:00")
+    raw = bat.read_bytes()
+    text = raw.decode("utf-8-sig")
+    assert "chcp 65001" in text
+    assert "PYTHONIOENCODING=utf-8" in text
+    assert 'mkdir "%USERPROFILE%\\.taijios"' in text
+
+
+def test_vision_auto_provider_falls_back_after_first_provider_error(monkeypatch, tmp_path):
+    import vision
+
+    img = tmp_path / "tiny.png"
+    img.write_bytes(b"\x89PNG\r\n\x1a\n" + b"0" * 16)
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "claude-key")
+    monkeypatch.setenv("ARK_API_KEY", "ark-key")
+    monkeypatch.setattr(vision, "_call_claude", lambda *a, **kw: (_ for _ in ()).throw(RuntimeError("claude down")))
+    monkeypatch.setattr(vision, "_call_openai_compat", lambda *a, **kw: "doubao ok")
+
+    provider, answer = vision.analyze_image(str(img), "what is this?")
+    assert provider == "doubao"
+    assert answer == "doubao ok"
+
+
+def test_embed_missing_key_reports_disabled_not_silent(monkeypatch, capsys):
+    import embed
+
+    monkeypatch.delenv("ARK_API_KEY", raising=False)
+    monkeypatch.setattr(embed, "_MISSING_KEY_WARNED", False)
+
+    assert embed.embed_text("hello") == []
+    err = capsys.readouterr().err
+    assert "ARK_API_KEY" in err
+    assert "embedding disabled" in err
+
+
+def test_brain_divination_passes_current_soul_object(monkeypatch, capsys):
+    import brain
+
+    seen = {}
+
+    class DummySoul:
+        backend = "mock"
+        stage = "test"
+
+        def chat(self, msg):
+            return SimpleNamespace(
+                intent={"crisis": 0, "work": 0, "learning": 0},
+                reply="ok",
+                stage="test",
+            )
+
+    soul = DummySoul()
+
+    def fake_cast(question, soul=None):
+        seen["question"] = question
+        seen["soul"] = soul
+        return ("raw-cast", "interp")
+
+    monkeypatch.setattr(brain, "cast_hexagram", fake_cast)
+    brain.brain_chat("要不要创业", soul)
+    capsys.readouterr()
+
+    assert seen["question"] == "要不要创业"
+    assert seen["soul"] is soul

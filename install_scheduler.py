@@ -43,8 +43,11 @@ def windows_install(run_time: str):
     py = sys.executable
     BAT.write_text(
         f'@echo off\r\n'
+        f'chcp 65001 >nul\r\n'
+        f'set PYTHONIOENCODING=utf-8\r\n'
+        f'if not exist "%USERPROFILE%\\.taijios" mkdir "%USERPROFILE%\\.taijios"\r\n'
         f'"{py}" "{HEARTBEAT}" >> "%USERPROFILE%\\.taijios\\heartbeat.out" 2>&1\r\n',
-        encoding="utf-8"
+        encoding="utf-8-sig"
     )
     r = subprocess.run(
         ["schtasks", "/create", "/tn", TASK,

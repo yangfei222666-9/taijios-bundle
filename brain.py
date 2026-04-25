@@ -173,7 +173,7 @@ def brain_chat(msg: str, soul, verbose: bool = True):
     # 3 · 通用占卦 · 辞职/创业/要不要/纠结 等决策类 → 起一卦
     if divination:
         print(f"\n  {C}检测到问卦意图 · 起一卦...{X}")
-        raw, interp = cast_hexagram(msg, soul=s)  # tuple unpack · 传 soul 让 LLM 解读
+        raw, interp = cast_hexagram(msg, soul=soul)  # tuple unpack · 传 soul 让 LLM 解读
         hex_out = f"{raw}\n\n{interp}".strip() if interp else raw
 
         print(f"\n  {G}{B}孔明:{X}")

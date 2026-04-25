@@ -128,11 +128,14 @@ def analyze_image(image_path: str, question: str, provider: str = None) -> tuple
          "https://api.moonshot.cn/v1", "moonshot-v1-8k-vision-preview", None),
     ]
 
+    errors = []
     for name, env_key, base, model, _ in providers:
         if provider and provider != name:
             continue
         key = os.environ.get(env_key, "").strip()
         if not key:
+            if provider == name:
+                return (name, f"✗ {env_key} 未设置 · 无法使用指定 vision provider: {name}")
             continue
         try:
             if name == "claude":
@@ -140,10 +143,15 @@ def analyze_image(image_path: str, question: str, provider: str = None) -> tuple
             return (name, _call_openai_compat(img_b64, mt, question, base, key, model))
         except urllib.error.HTTPError as e:
             body = e.read()[:200].decode("utf-8", errors="replace")
-            return (name, f"(HTTP {e.code}): {body}")
+            msg = f"(HTTP {e.code}): {body}"
         except Exception as e:
-            return (name, f"(err: {type(e).__name__}: {e})")
+            msg = f"(err: {type(e).__name__}: {e})"
+        if provider:
+            return (name, msg)
+        errors.append(f"{name}: {msg}")
 
+    if errors:
+        return ("none", "✗ vision providers all failed: " + " | ".join(errors))
     return ("none", "✗ 无 vision key. 需要 ANTHROPIC_API_KEY / ARK_API_KEY / OPENAI_API_KEY / KIMI_API_KEY 之一 (DeepSeek 暂不支持 vision).")
 
 
