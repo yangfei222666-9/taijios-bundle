@@ -270,43 +270,43 @@ class AgentEvolution:
         history = self.get_evolution_history(agent_id, limit=5)
         pending = self.get_pending_suggestions(agent_id)
 
-        report = f"# Agent {agent_id} 杩涘寲鎶ュ憡\n\n"
-        report += f"**鐢熸垚鏃堕棿锛?* {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n"
+        report = f"# Agent {agent_id} Evolution Report\n\n"
+        report += f"**Generated at:** {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n"
 
-        # 鎬ц兘鍒嗘瀽
-        report += "## [REPORT] 鎬ц兘鍒嗘瀽锛堟渶杩?4灏忔椂锛塡n\n"
-        report += f"- 鎬讳换鍔℃暟锛歿analysis['total_tasks']}\n"
-        report += f"- 澶辫触浠诲姟鏁帮細{analysis['failed_tasks']}\n"
-        report += f"- 澶辫触鐜囷細{analysis['failure_rate']:.1%}\n\n"
+        # Performance analysis.
+        report += "## Performance Analysis (last 24 hours)\n\n"
+        report += f"- Total tasks: {analysis['total_tasks']}\n"
+        report += f"- Failed tasks: {analysis['failed_tasks']}\n"
+        report += f"- Failure rate: {analysis['failure_rate']:.1%}\n\n"
 
-        # 澶辫触妯″紡
+        # Failure patterns.
         if analysis['failure_patterns']:
-            report += "## [WARN] 澶辫触妯″紡\n\n"
+            report += "## Failure Patterns\n\n"
             for task_type, data in analysis['failure_patterns'].items():
-                report += f"- **{task_type}**锛氬け璐?{data['count']} 娆n"
+                report += f"- **{task_type}**: failed {data['count']} times\n"
             report += "\n"
 
-        # 鏀硅繘寤鸿
+        # Improvement suggestions.
         if analysis['suggestions']:
-            report += "## [IDEA] 鏀硅繘寤鸿\n\n"
+            report += "## Improvement Suggestions\n\n"
             for i, suggestion in enumerate(analysis['suggestions'], 1):
                 report += f"{i}. {suggestion}\n"
             report += "\n"
 
-        # 寰呭鏍稿缓璁?
+        # Pending suggestions.
         if pending:
-            report += "## 馃搵 寰呭鏍稿缓璁甛n\n"
+            report += "## Pending Review Suggestions\n\n"
             for suggestion in pending:
-                report += f"- **{suggestion['type']}**锛歿suggestion['description']}\n"
+                report += f"- **{suggestion['type']}**: {suggestion['description']}\n"
             report += "\n"
 
-        # 杩涘寲鍘嗗彶
+        # Evolution history.
         if history:
-            report += "## 馃摐 杩涘寲鍘嗗彶锛堟渶杩?娆★級\n\n"
+            report += "## Evolution History (latest 5)\n\n"
             for record in history:
                 time_str = datetime.fromtimestamp(record['timestamp']).strftime('%Y-%m-%d %H:%M')
                 report += f"- **{time_str}** - {record['evolution_type']}\n"
-                report += f"  鍘熷洜锛歿record['reason']}\n"
+                report += f"  Reason: {record['reason']}\n"
             report += "\n"
 
         return report
@@ -317,12 +317,12 @@ def main():
     import sys
     
     if len(sys.argv) < 2:
-        print("鐢ㄦ硶锛歱ython -m aios.agent_system.evolution <command> [args]")
-        print("\n鍛戒护锛?)
-        print("  analyze <agent_id>     - 鍒嗘瀽 Agent 澶辫触妯″紡")
-        print("  report <agent_id>      - 鐢熸垚杩涘寲鎶ュ憡")
-        print("  suggestions [agent_id] - 鏌ョ湅寰呭鏍稿缓璁?)
-        print("  history <agent_id>     - 鏌ョ湅杩涘寲鍘嗗彶")
+        print("Usage: python -m aios.agent_system.evolution <command> [args]")
+        print("\nCommands:")
+        print("  analyze <agent_id>     - Analyze agent failure patterns")
+        print("  report <agent_id>      - Generate an evolution report")
+        print("  suggestions [agent_id] - List pending suggestions")
+        print("  history <agent_id>     - Show evolution history")
         return
 
     evolution = AgentEvolution()
@@ -330,7 +330,7 @@ def main():
 
     if command == "analyze":
         if len(sys.argv) < 3:
-            print("閿欒锛氶渶瑕佹彁渚?agent_id")
+            print("Error: agent_id is required")
             return
         
         agent_id = sys.argv[2]
@@ -339,7 +339,7 @@ def main():
 
     elif command == "report":
         if len(sys.argv) < 3:
-            print("閿欒锛氶渶瑕佹彁渚?agent_id")
+            print("Error: agent_id is required")
             return
         
         agent_id = sys.argv[2]
@@ -353,7 +353,7 @@ def main():
 
     elif command == "history":
         if len(sys.argv) < 3:
-            print("閿欒锛氶渶瑕佹彁渚?agent_id")
+            print("Error: agent_id is required")
             return
         
         agent_id = sys.argv[2]
@@ -361,9 +361,8 @@ def main():
         print(json.dumps(history, ensure_ascii=False, indent=2))
 
     else:
-        print(f"鏈煡鍛戒护锛歿command}")
+        print(f"Unknown command: {command}")
 
 
 if __name__ == "__main__":
     main()
-
