@@ -1,5 +1,7 @@
 # TaijiOS Bundle
 
+[![CI](https://github.com/yangfei222666-9/taijios-bundle/actions/workflows/ci.yml/badge.svg)](https://github.com/yangfei222666-9/taijios-bundle/actions/workflows/ci.yml)
+
 TaijiOS Bundle is a release snapshot and installer package for trying the TaijiOS ecosystem locally.
 
 It is not the canonical source repo for every component. Treat this repository as the packaged entry point:
@@ -104,4 +106,3 @@ python -m pytest tests/test_security.py -v
 - API 安全边界: [SECURITY.md](SECURITY.md)
 
 不要把本仓库里的历史原型、bundle 快照、官网源码和当前主开发仓混为一谈。对外说明时，本仓库只承担“试装包 / 分发入口 / 本地验证入口”的角色。
-
