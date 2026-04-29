@@ -122,7 +122,9 @@ python heartbeat.py            # 手动 tick 一次
 python install_scheduler.py    # 只装定时任务
 ```
 
-以上都**多轮 API 验证过** · DeepSeek 真调稳定 · 军议累加 5→6→7.
+以上是发布前样例路径。它只能证明 bundle 入口和 demo 路径设计完整，不能证明你当前机器的 live provider health。
+
+如果要声明 DeepSeek / 其他 provider 当前可用，请先跑 `python doctor.py --dry`，再按对应组件的 live probe / 日志结果单独确认。
 
 ## 🚀 5 分钟跑起来 (手动方式)
 
