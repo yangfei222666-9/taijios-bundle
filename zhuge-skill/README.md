@@ -354,8 +354,6 @@ MIT — 自由使用、修改、商用。
 
 装上了？跑不起来？有想法想聊？**欢迎直接找我**：
 
-- **邮箱（优先）**: `yangfei222666@gmail.com`
-- 微信（辅）: `yf529486`
 - GitHub Issue: [提 issue](https://github.com/yangfei222666-9/zhuge-skill/issues/new)
 
 这是早期项目，你的每一条反馈（哪怕是"装了跑不起来"）都会被认真看。

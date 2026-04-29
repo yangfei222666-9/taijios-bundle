@@ -195,8 +195,6 @@ MIT. Ship it wherever.
 
 This is a very early release. Every bug report, every "didn't work for me", every "I wish it did X" is read:
 
-- **Email (preferred):** `yangfei222666@gmail.com`
-- WeChat (secondary): `yf529486`
 - GitHub Issue: [open one](https://github.com/yangfei222666-9/self-improving-loop/issues/new)
 - Parent project: [TaijiOS](https://github.com/yangfei222666-9/TaijiOS)
 

@@ -10,7 +10,7 @@ readme = "README.md"
 requires-python = ">=3.9"
 license = { file = "LICENSE" }
 authors = [
-    { name = "Yang Fei", email = "yangfei222666@gmail.com" },
+    { name = "TaijiOS maintainers", email = "noreply@example.invalid" },
 ]
 keywords = [
     "ai-agent",

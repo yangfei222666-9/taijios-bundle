@@ -213,7 +213,7 @@ grep -n "write_env\|\.env" core/wizard.py
 - 新增 `scripts/error_log.py`：JSONL 错误日志，接入 `backfill` 守护循环 / `fetch_actual_result` / `core/llm.py` 三个 except 点
 - 新增 `README.en.md` 英文版（为国际用户 / Show HN 准备）
 - 新增 `CHANGELOG.md` 独立文件
-- README 加 📬 反馈与联系 段（邮箱优先，微信 yf529486 辅）
+- README 加 📬 反馈与联系 段（统一走 GitHub Issue，避免公开私联系方式）
 - README 加跨 Agent 接入片段（Claude Code / Cursor / OpenClaw / Hermes / 纯 Python 各一个可复制示例）
 
 ### v1.0.3 (2026-04-17) — 视觉素材升级
