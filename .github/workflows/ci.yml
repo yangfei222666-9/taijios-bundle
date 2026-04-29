@@ -26,5 +26,5 @@ jobs:
       - name: Compile Python sources
         run: python -m compileall -q .
 
-      - name: Run security regression tests
-        run: python -m pytest tests/test_security.py -q
+      - name: Run bundle regression tests
+        run: python -m pytest tests -q
